@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.java_main_proj.HelloController"
+            prefWidth="1000" prefHeight="700">
+
+    <top>
+        <MenuBar>
+            <Menu text="קבצים">
+                <MenuItem text="יציאה" onAction="#handleExit"/>
+            </Menu>
+            <Menu text="ניהול">
+                <MenuItem text="סטודנטים" onAction="#showStudents"/>
+                <MenuItem text="קורסים" onAction="#showCourses"/>
+                <MenuItem text="שיבוץ" onAction="#showEnrollment"/>
+            </Menu>
+            <Menu text="עזרה">
+                <MenuItem text="אודות" onAction="#showAbout"/>
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <center>
+        <VBox alignment="CENTER" spacing="20">
+            <padding>
+                <Insets top="50" right="50" bottom="50" left="50"/>
+            </padding>
+
+            <Label text="UniSmart - מערכת שיבוץ סטודנטים"
+                   style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+            <Button text="ניהול סטודנטים" onAction="#showStudents"
+                    prefWidth="200" prefHeight="50"
+                    style="-fx-font-size: 14px;"/>
+
+            <Button text="ניהול קורסים" onAction="#showCourses"
+                    prefWidth="200" prefHeight="50"
+                    style="-fx-font-size: 14px;"/>
+
+            <Button text="ביצוע שיבוץ" onAction="#showEnrollment"
+                    prefWidth="200" prefHeight="50"
+                    style="-fx-font-size: 14px;"/>
+
+            <Button text="הצגת תוצאות" onAction="#showResults"
+                    prefWidth="200" prefHeight="50"
+                    style="-fx-font-size: 14px;"/>
+
+            <Label fx:id="statusLabel" text="מצב: מחובר למסד הנתונים"
+                   style="-fx-text-fill: green; -fx-font-size: 14px;"/>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" spacing="10" style="-fx-background-color: #f0f0f0;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="UniSmart © 2025 - יהונתן רפאלי"/>
+        </HBox>
+    </bottom>
+</BorderPane>

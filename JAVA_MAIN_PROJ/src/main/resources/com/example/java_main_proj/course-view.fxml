@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.java_main_proj.CourseController"
+      spacing="10" style="-fx-background-color: #f4f4f4;">
+
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="searchField" promptText="חיפוש לפי שם קורס" prefWidth="300"/>
+        <Button text="חפש" onAction="#searchCourse" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="הוסף קורס" onAction="#addCourse" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+        <Button text="ערוך" onAction="#editCourse" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+        <Button text="מחק" onAction="#deleteCourse" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
+        <Button text="רענן" onAction="#refreshTable" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
+    </HBox>
+
+    <TableView fx:id="coursesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="idColumn" text="מזהה" prefWidth="50"/>
+            <TableColumn fx:id="nameColumn" text="שם קורס" prefWidth="160"/>
+            <TableColumn fx:id="typeColumn" text="סוג" prefWidth="60"/>
+            <TableColumn fx:id="lecturerColumn" text="מרצה" prefWidth="130"/>
+            <TableColumn fx:id="dayColumn" text="יום" prefWidth="70"/>
+            <TableColumn fx:id="startTimeColumn" text="שעת התחלה" prefWidth="90"/>
+            <TableColumn fx:id="endTimeColumn" text="שעת סיום" prefWidth="90"/>
+            <TableColumn fx:id="capacityColumn" text="קיבולת" prefWidth="70"/>
+            <TableColumn fx:id="enrolledColumn" text="נרשמים" prefWidth="70"/>
+        </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label fx:id="statusLabel" text="מוכן"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="סגור" onAction="#closeWindow"/>
+    </HBox>
+</VBox>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.java_main_proj.EnrollmentController"
+            prefWidth="800" prefHeight="600">
+
+    <top>
+        <VBox spacing="10" style="-fx-background-color: #FF9800; -fx-padding: 15;">
+            <Label text="ביצוע שיבוץ סטודנטים - אלגוריתם היברידי"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <VBox spacing="20" alignment="CENTER">
+            <padding>
+                <Insets top="30" right="30" bottom="30" left="30"/>
+            </padding>
+
+            <Label text="הגדרות שיבוץ"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+            <GridPane hgap="15" vgap="15" alignment="CENTER">
+                <Label text="שנת לימודים:" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                       style="-fx-font-size: 14px;"/>
+                <ComboBox fx:id="yearComboBox" GridPane.columnIndex="0" GridPane.rowIndex="0"
+                          prefWidth="200" promptText="בחר שנה"/>
+
+                <Label text="סמסטר:" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                       style="-fx-font-size: 14px;"/>
+                <ComboBox fx:id="semesterComboBox" GridPane.columnIndex="0" GridPane.rowIndex="1"
+                          prefWidth="200" promptText="בחר סמסטר"/>
+            </GridPane>
+
+            <VBox spacing="10" alignment="CENTER">
+                <Label text="התקדמות:" style="-fx-font-size: 14px;"/>
+                <ProgressBar fx:id="progressBar" prefWidth="400" progress="0"/>
+                <Label fx:id="progressLabel" text="0%" style="-fx-font-size: 12px;"/>
+            </VBox>
+
+            <TextArea fx:id="logArea" prefHeight="250" editable="false"
+                      promptText="לוג פעולות יופיע כאן..."
+                      style="-fx-font-family: 'Consolas'; -fx-font-size: 12px;"/>
+
+            <HBox spacing="15" alignment="CENTER">
+                <Button text="התחל שיבוץ" onAction="#startEnrollment"
+                        prefWidth="150" prefHeight="40"
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Button text="עצור" onAction="#stopEnrollment"
+                        prefWidth="150" prefHeight="40"
+                        style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Button text="נקה" onAction="#clearLog"
+                        prefWidth="150" prefHeight="40"
+                        style="-fx-background-color: #757575; -fx-text-fill: white; -fx-font-size: 14px;"/>
+            </HBox>
+        </VBox>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #f0f0f0;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label fx:id="statusLabel" text="מוכן לשיבוץ"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="סגור" onAction="#closeWindow"
+                    style="-fx-background-color: #757575; -fx-text-fill: white;"/>
+        </HBox>
+    </bottom>
+</BorderPane>
