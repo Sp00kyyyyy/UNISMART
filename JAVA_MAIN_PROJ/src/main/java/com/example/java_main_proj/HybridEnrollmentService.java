@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,7 +15,15 @@ public class HybridEnrollmentService {
     private static final String FULL_STATUS = "הצלחה מלאה";
     private static final String PARTIAL_STATUS = "שיבוץ חלקי";
 
-    private final GuidewayRepository repository = new GuidewayRepository();
+    private final GuidewayRepository repository;
+
+    public HybridEnrollmentService() {
+        this(new GuidewayRepository());
+    }
+
+    public HybridEnrollmentService(GuidewayRepository repository) {
+        this.repository = Objects.requireNonNull(repository, "repository");
+    }
 
     public EnrollmentRunReport runEnrollment(String academicYear, String semester) {
         List<String> logLines = new ArrayList<>();

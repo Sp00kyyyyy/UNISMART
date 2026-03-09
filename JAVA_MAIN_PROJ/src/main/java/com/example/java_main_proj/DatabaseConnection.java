@@ -56,6 +56,11 @@ public class DatabaseConnection {
 
     private static String resolveDatabasePath() {
         List<Path> candidates = new ArrayList<>();
+        String propertyPath = System.getProperty("unismart.db.path");
+        if (propertyPath != null && !propertyPath.isBlank()) {
+            candidates.add(Path.of(propertyPath));
+        }
+
         String explicitPath = System.getenv("UNISMART_DB_PATH");
         if (explicitPath != null && !explicitPath.isBlank()) {
             candidates.add(Path.of(explicitPath));
