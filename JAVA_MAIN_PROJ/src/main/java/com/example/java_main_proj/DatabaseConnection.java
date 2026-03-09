@@ -23,7 +23,6 @@ public class DatabaseConnection {
             String connectionURL = "jdbc:ucanaccess://" + dbPath + ";memory=false";
             if (connection == null || connection.isClosed()) {
                 connection = java.sql.DriverManager.getConnection(connectionURL);
-                DatabaseBootstrap.synchronize(connection);
             }
         } catch (java.sql.SQLException exception) {
             System.err.println("SQL error: " + exception.getMessage());
