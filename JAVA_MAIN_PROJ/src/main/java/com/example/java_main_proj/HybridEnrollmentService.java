@@ -37,6 +37,9 @@ public class HybridEnrollmentService {
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent = buildMandatoryCoursesByStudent(students, requirements, coursesById);
         Map<Integer, List<RequestChoice>> requestsByStudent = buildRequestsByStudent(
                 students, coursesById, mandatoryCoursesByStudent, constraints);
+        int activeStudents = (int) requestsByStudent.values().stream()
+                .filter(requests -> !requests.isEmpty())
+                .count();
 
         List<Student> orderedStudents = new ArrayList<>(students);
         orderedStudents.sort(studentComparator(mandatoryCoursesByStudent, requestsByStudent));
@@ -82,7 +85,7 @@ public class HybridEnrollmentService {
         return new EnrollmentRunReport(
                 academicYear,
                 semester,
-                students.size(),
+                activeStudents,
                 requestedCourses,
                 finalAssignments,
                 improvements,

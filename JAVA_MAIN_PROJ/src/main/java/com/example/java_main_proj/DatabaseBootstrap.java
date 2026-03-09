@@ -26,7 +26,7 @@ public final class DatabaseBootstrap {
                 ensureGuidewaySchema(connection);
                 dropObsoleteTables(connection);
                 normalizeStudentData(connection);
-                applyEdgeCaseStudentSettings(connection);
+                upsertEdgeCaseStudents(connection);
                 normalizeCourseData(connection);
                 upsertEdgeCaseCourses(connection);
                 normalizeEnrollmentSemesters(connection);
@@ -99,14 +99,27 @@ public final class DatabaseBootstrap {
             }
             statement.executeBatch();
         }
-    }
 
-    private static void applyEdgeCaseStudentSettings(Connection connection) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "UPDATE Students SET MaxMandatoryCourses=? WHERE StudentID=?")) {
-            statement.setInt(1, 1);
+            statement.setInt(1, 3);
             statement.setInt(2, 11);
             statement.executeUpdate();
+        }
+    }
+
+    private static void upsertEdgeCaseStudents(Connection connection) throws SQLException {
+        List<EdgeCaseStudentSeed> seeds = List.of(
+                new EdgeCaseStudentSeed(12, "שחר חובה", "300000012", 1, "תרחיש קיץ", 1, 1, 95.0, "בוקר", "ראשון,שלישי,חמישי", 1),
+                new EdgeCaseStudentSeed(13, "מאיה גיבוי", "300000013", 2, "תרחיש קיץ", 2, 2, 88.0, "בוקר", "ראשון,שלישי,חמישי", 5),
+                new EdgeCaseStudentSeed(14, "גל חפיפה", "300000014", 2, "תרחיש קיץ", 2, 2, 84.0, "בוקר", "ראשון,חמישי", 5),
+                new EdgeCaseStudentSeed(15, "נועה חלופה", "300000015", 4, "תרחיש קיץ", 1, 4, 91.0, "בוקר", "רביעי,חמישי", 4),
+                new EdgeCaseStudentSeed(16, "רז ערב", "300000016", 3, "תרחיש קיץ", 2, 3, 87.0, "ערב", "חמישי", 4),
+                new EdgeCaseStudentSeed(17, "איל מלא בלבד", "300000017", 3, "תרחיש קיץ", 3, 3, 79.0, "בוקר", "רביעי", 4)
+        );
+
+        for (EdgeCaseStudentSeed seed : seeds) {
+            upsertStudent(connection, seed);
         }
     }
 
@@ -146,7 +159,10 @@ public final class DatabaseBootstrap {
                 new EdgeCaseCourseSeed(14, "קורס קיץ מלא", "בחירה", "פרופ' דנה כהן", "רביעי", "14:00", "16:00", 1, 1, "סמסטר קיץ"),
                 new EdgeCaseCourseSeed(15, "מעבדת קיץ חובה ב", "חובה", "ד\"ר אלון רז", "שלישי", "09:00", "11:00", 2, 0, "סמסטר קיץ"),
                 new EdgeCaseCourseSeed(16, "סמינר ערב קיץ", "בחירה", "ד\"ר מיכל ברק", "חמישי", "17:00", "19:00", 3, 0, "סמסטר קיץ"),
-                new EdgeCaseCourseSeed(17, "תרגול קיץ חופף", "בחירה", "ד\"ר נועה שלו", "ראשון", "09:30", "11:30", 2, 0, "סמסטר קיץ")
+                new EdgeCaseCourseSeed(17, "תרגול קיץ חופף", "בחירה", "ד\"ר נועה שלו", "ראשון", "09:30", "11:30", 2, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(18, "מעבדת פרויקט קיץ", "בחירה", "ד\"ר אורי בר", "שלישי", "12:00", "14:00", 3, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(19, "סדנת צהריים קיץ", "בחירה", "ד\"ר מיה שלו", "חמישי", "13:00", "15:00", 3, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(20, "סדנת ערב מתנגשת", "בחירה", "ד\"ר תמר אור", "חמישי", "14:00", "16:00", 3, 0, "סמסטר קיץ")
         );
 
         for (EdgeCaseCourseSeed seed : seeds) {
@@ -223,8 +239,8 @@ public final class DatabaseBootstrap {
                 new CourseTrackRuleSeed(18, 5, "מדעי המחשב", 4, false),
                 new CourseTrackRuleSeed(19, 8, "מדעי המחשב", 4, false),
                 new CourseTrackRuleSeed(20, 10, "הנדסת תוכנה", 4, false),
-                new CourseTrackRuleSeed(21, 12, "מדעי המחשב", 1, true),
-                new CourseTrackRuleSeed(22, 15, "מדעי המחשב", 1, true)
+                new CourseTrackRuleSeed(21, 12, "תרחיש קיץ", 1, true),
+                new CourseTrackRuleSeed(22, 15, "תרחיש קיץ", 1, true)
         );
 
         try (Statement deleteStatement = connection.createStatement()) {
@@ -258,8 +274,22 @@ public final class DatabaseBootstrap {
         try (PreparedStatement insertStatement = connection.prepareStatement(
                 "INSERT INTO StudentCoursePreferences (PreferenceID, StudentID, CourseID, PreferenceRank) VALUES (?, ?, ?, ?)")) {
             for (StudentSeed student : students) {
+                List<StudentPreferenceSeed> explicitPreferences = edgeCasePreferences(student.studentId());
+                if (!explicitPreferences.isEmpty()) {
+                    for (StudentPreferenceSeed preference : explicitPreferences) {
+                        if (!coursesById.containsKey(preference.courseId())) {
+                            continue;
+                        }
+                        insertStatement.setInt(1, nextId++);
+                        insertStatement.setInt(2, student.studentId());
+                        insertStatement.setInt(3, preference.courseId());
+                        insertStatement.setInt(4, preference.rank());
+                        insertStatement.addBatch();
+                    }
+                    continue;
+                }
+
                 List<Integer> rankedCourses = buildRankedCoursePreferences(student, coursesById, mandatoryCoursesByTrackAndYear);
-                appendEdgeCasePreferences(student.studentId(), rankedCourses, coursesById);
                 int rank = 1;
                 for (Integer courseId : rankedCourses) {
                     insertStatement.setInt(1, nextId++);
@@ -305,38 +335,47 @@ public final class DatabaseBootstrap {
         return rankedCourseIds;
     }
 
-    private static void appendEdgeCasePreferences(
-            int studentId,
-            List<Integer> rankedCourseIds,
-            Map<Integer, CourseSeed> coursesById
-    ) {
+    private static List<StudentPreferenceSeed> edgeCasePreferences(int studentId) {
         switch (studentId) {
-            case 11 -> {
-                appendIfPresent(rankedCourseIds, coursesById, 12);
-                appendIfPresent(rankedCourseIds, coursesById, 15);
-                appendIfPresent(rankedCourseIds, coursesById, 13);
+            case 12 -> {
+                return List.of(
+                        new StudentPreferenceSeed(12, 1),
+                        new StudentPreferenceSeed(15, 2),
+                        new StudentPreferenceSeed(18, 3)
+                );
             }
-            case 8 -> {
-                appendIfPresent(rankedCourseIds, coursesById, 12);
-                appendIfPresent(rankedCourseIds, coursesById, 16);
+            case 13 -> {
+                return List.of(
+                        new StudentPreferenceSeed(12, 1),
+                        new StudentPreferenceSeed(18, 2)
+                );
             }
-            case 2 -> {
-                appendIfPresent(rankedCourseIds, coursesById, 13);
-                appendIfPresent(rankedCourseIds, coursesById, 17);
+            case 14 -> {
+                return List.of(
+                        new StudentPreferenceSeed(13, 1),
+                        new StudentPreferenceSeed(17, 2),
+                        new StudentPreferenceSeed(16, 3)
+                );
             }
-            case 3 -> appendIfPresent(rankedCourseIds, coursesById, 14);
+            case 15 -> {
+                return List.of(
+                        new StudentPreferenceSeed(14, 1),
+                        new StudentPreferenceSeed(19, 2)
+                );
+            }
+            case 16 -> {
+                return List.of(
+                        new StudentPreferenceSeed(19, 1),
+                        new StudentPreferenceSeed(20, 1),
+                        new StudentPreferenceSeed(18, 2)
+                );
+            }
+            case 17 -> {
+                return List.of(new StudentPreferenceSeed(14, 1));
+            }
             default -> {
+                return List.of();
             }
-        }
-    }
-
-    private static void appendIfPresent(
-            List<Integer> rankedCourseIds,
-            Map<Integer, CourseSeed> coursesById,
-            int courseId
-    ) {
-        if (coursesById.containsKey(courseId) && !rankedCourseIds.contains(courseId)) {
-            rankedCourseIds.add(courseId);
         }
     }
 
@@ -429,6 +468,44 @@ public final class DatabaseBootstrap {
             }
         }
         return rules;
+    }
+
+    private static void upsertStudent(Connection connection, EdgeCaseStudentSeed seed) throws SQLException {
+        try (PreparedStatement updateStatement = connection.prepareStatement(
+                "UPDATE Students SET FullName=?, ID_Number=?, [Year]=?, Track=?, PriorityLevel=?, Seniority=?, GPA=?, TimePreference=?, PreferredDays=?, MaxMandatoryCourses=? WHERE StudentID=?")) {
+            updateStatement.setString(1, seed.fullName());
+            updateStatement.setString(2, seed.idNumber());
+            updateStatement.setInt(3, seed.year());
+            updateStatement.setString(4, seed.track());
+            updateStatement.setInt(5, seed.priorityLevel());
+            updateStatement.setInt(6, seed.seniority());
+            updateStatement.setDouble(7, seed.gpa());
+            updateStatement.setString(8, seed.timePreference());
+            updateStatement.setString(9, seed.preferredDays());
+            updateStatement.setInt(10, seed.maxMandatoryCourses());
+            updateStatement.setInt(11, seed.studentId());
+
+            int updated = updateStatement.executeUpdate();
+            if (updated > 0) {
+                return;
+            }
+        }
+
+        try (PreparedStatement insertStatement = connection.prepareStatement(
+                "INSERT INTO Students (StudentID, FullName, ID_Number, [Year], Track, PriorityLevel, Seniority, GPA, TimePreference, PreferredDays, MaxMandatoryCourses) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            insertStatement.setInt(1, seed.studentId());
+            insertStatement.setString(2, seed.fullName());
+            insertStatement.setString(3, seed.idNumber());
+            insertStatement.setInt(4, seed.year());
+            insertStatement.setString(5, seed.track());
+            insertStatement.setInt(6, seed.priorityLevel());
+            insertStatement.setInt(7, seed.seniority());
+            insertStatement.setDouble(8, seed.gpa());
+            insertStatement.setString(9, seed.timePreference());
+            insertStatement.setString(10, seed.preferredDays());
+            insertStatement.setInt(11, seed.maxMandatoryCourses());
+            insertStatement.executeUpdate();
+        }
     }
 
     private static void upsertCourse(Connection connection, EdgeCaseCourseSeed seed) throws SQLException {
@@ -562,6 +639,21 @@ public final class DatabaseBootstrap {
     private record CourseTrackRuleSeed(int ruleId, int courseId, String track, int year, boolean mandatory) {
     }
 
+    private record EdgeCaseStudentSeed(
+            int studentId,
+            String fullName,
+            String idNumber,
+            int year,
+            String track,
+            int priorityLevel,
+            int seniority,
+            double gpa,
+            String timePreference,
+            String preferredDays,
+            int maxMandatoryCourses
+    ) {
+    }
+
     private record EdgeCaseCourseSeed(
             int courseId,
             String courseName,
@@ -574,6 +666,9 @@ public final class DatabaseBootstrap {
             int enrolledStudents,
             String semester
     ) {
+    }
+
+    private record StudentPreferenceSeed(int courseId, int rank) {
     }
 
     private record StudentSeed(

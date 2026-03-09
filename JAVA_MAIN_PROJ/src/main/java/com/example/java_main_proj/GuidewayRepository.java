@@ -199,6 +199,9 @@ public class GuidewayRepository {
 
         for (Student student : studentsById.values()) {
             int requested = requestedCounts.getOrDefault(student.getStudentID(), 0);
+            if (requested == 0) {
+                continue;
+            }
             List<String> assigned = assignedCourseNames.getOrDefault(student.getStudentID(), List.of());
             int enrolled = assigned.size();
             String status;

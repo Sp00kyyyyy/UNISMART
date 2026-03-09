@@ -50,7 +50,7 @@ class GuidewayIntegrationTest {
 
         // Assert
         assertAll(
-                () -> assertEquals(11, students.size()),
+                () -> assertEquals(17, students.size()),
                 () -> assertEquals(7, constraints.size()),
                 () -> assertEquals(22, requirements.size()),
                 () -> assertEquals(11, report.getStudentsProcessed()),
@@ -84,25 +84,31 @@ class GuidewayIntegrationTest {
 
         // Assert
         assertAll(
-                () -> assertEquals(6, summerCourses.size()),
-                () -> assertEquals(11, report.getStudentsProcessed()),
-                () -> assertEquals(8, report.getRequestedCourses()),
-                () -> assertEquals(3, report.getAssignedCourses()),
+                () -> assertEquals(9, summerCourses.size()),
+                () -> assertEquals(6, report.getStudentsProcessed()),
+                () -> assertEquals(14, report.getRequestedCourses()),
+                () -> assertEquals(8, report.getAssignedCourses()),
                 () -> assertEquals(0, report.getFullAssignments()),
-                () -> assertEquals(3, report.getPartialAssignments()),
-                () -> assertEquals(8, report.getUnassignedStudents()),
-                () -> assertEquals(11, results.size()),
-                () -> assertEquals(3, results.stream().filter(result -> PARTIAL_STATUS.equals(result.getStatus())).count()),
-                () -> assertEquals(8, results.stream().filter(result -> UNASSIGNED_STATUS.equals(result.getStatus())).count()),
+                () -> assertEquals(5, report.getPartialAssignments()),
+                () -> assertEquals(1, report.getUnassignedStudents()),
+                () -> assertEquals(6, results.size()),
+                () -> assertEquals(5, results.stream().filter(result -> PARTIAL_STATUS.equals(result.getStatus())).count()),
+                () -> assertEquals(1, results.stream().filter(result -> UNASSIGNED_STATUS.equals(result.getStatus())).count()),
                 () -> assertTrue(semesters.contains(SEMESTER_SUMMER)),
-                () -> assertEquals(3, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(11, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(11, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(8, 16, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(8, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(2, 13, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(2, 17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertEquals(0, countAssignmentsForStudent(3, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertEquals(8, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(12, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(12, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(12, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(13, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(13, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(14, 13, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(14, 17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(14, 16, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(15, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(16, 20, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(16, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(16, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertEquals(0, countAssignmentsForStudent(17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertEquals(0, countAssignmentsForCourse(14, ACADEMIC_YEAR, SEMESTER_SUMMER))
         );
     }
