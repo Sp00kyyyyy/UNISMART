@@ -10,6 +10,8 @@ import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 
 public class EnrollmentController {
+    private static final String SEMESTER_A = "סמסטר א'";
+    private static final String SEMESTER_B = "סמסטר ב'";
 
     @FXML private ComboBox<String> yearComboBox;
     @FXML private ComboBox<String> semesterComboBox;
@@ -27,10 +29,10 @@ public class EnrollmentController {
 
     private void setupComboBoxes() {
         yearComboBox.getItems().addAll("2025-2026", "2026-2027", "2027-2028");
-        semesterComboBox.getItems().addAll("סמסטר א'", "סמסטר ב'", "סמסטר קיץ");
+        semesterComboBox.getItems().addAll(SEMESTER_A, SEMESTER_B);
 
         yearComboBox.setValue("2025-2026");
-        semesterComboBox.setValue("סמסטר א'");
+        semesterComboBox.setValue(SEMESTER_A);
     }
 
     @FXML

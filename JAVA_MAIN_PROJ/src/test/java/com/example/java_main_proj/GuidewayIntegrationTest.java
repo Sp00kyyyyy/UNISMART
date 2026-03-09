@@ -10,21 +10,22 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GuidewayIntegrationTest {
     private static final String ACADEMIC_YEAR = "2025-2026";
     private static final String SEMESTER_A = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D0'";
-    private static final String SEMESTER_SUMMER = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05E7\u05D9\u05E5";
+    private static final String SEMESTER_B = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D1'";
     private static final String FULL_STATUS = "\u05D4\u05E6\u05DC\u05D7\u05D4 \u05DE\u05DC\u05D0\u05D4";
-    private static final String PARTIAL_STATUS = "\u05E9\u05D9\u05D1\u05D5\u05E5 \u05D7\u05DC\u05E7\u05D9";
-    private static final String UNASSIGNED_STATUS = "\u05DC\u05DC\u05D0 \u05E9\u05D9\u05D1\u05D5\u05E5";
 
     @AfterEach
     void tearDown() {
@@ -42,17 +43,22 @@ class GuidewayIntegrationTest {
 
         // Act
         List<Student> students = repository.loadStudents();
+        List<Course> courses = repository.loadCourses(null);
         Map<String, ConstraintRule> constraints = repository.loadConstraints();
         List<CourseRequirement> requirements = repository.loadCourseRequirements();
-        EnrollmentRunReport report = service.runEnrollment("2025-2026", SEMESTER_A);
-        List<EnrollmentResult> results = repository.loadEnrollmentResults("2025-2026", SEMESTER_A);
+        EnrollmentRunReport report = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_A);
+        List<EnrollmentResult> results = repository.loadEnrollmentResults(ACADEMIC_YEAR, SEMESTER_A);
         List<String> semesters = repository.loadSemestersWithResults();
 
         // Assert
         assertAll(
-                () -> assertEquals(22, students.size()),
+                () -> assertEquals(11, students.size()),
+                () -> assertEquals(10, courses.size()),
+                () -> assertTrue(courses.stream().allMatch(course -> course.getEnrolledStudents() == 0)),
                 () -> assertEquals(7, constraints.size()),
-                () -> assertEquals(22, requirements.size()),
+                () -> assertEquals(20, requirements.size()),
+                () -> assertEquals(55, countPreferences()),
+                () -> assertEquals(List.of(SEMESTER_A, SEMESTER_B), semesters),
                 () -> assertEquals(11, report.getStudentsProcessed()),
                 () -> assertEquals(33, report.getRequestedCourses()),
                 () -> assertEquals(33, report.getAssignedCourses()),
@@ -61,15 +67,16 @@ class GuidewayIntegrationTest {
                 () -> assertEquals(0, report.getUnassignedStudents()),
                 () -> assertEquals(11, results.size()),
                 () -> assertTrue(results.stream().allMatch(result -> FULL_STATUS.equals(result.getStatus()))),
-                () -> assertTrue(semesters.contains(SEMESTER_A)),
                 () -> assertFalse(tableExists("Prerequisites")),
                 () -> assertFalse(tableExists("CompletedCourses")),
                 () -> assertEquals(33, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A))
         );
+
+        assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_A, repository);
     }
 
     @Test
-    void summerEdgeCaseScenarioRespectsCapacityMandatoryLimitsAndConflicts() throws Exception {
+    void semesterARunAndSemesterBRunStaySeparated() throws Exception {
         // Arrange
         useIsolatedDatabaseCopy();
 
@@ -77,54 +84,26 @@ class GuidewayIntegrationTest {
         HybridEnrollmentService service = new HybridEnrollmentService();
 
         // Act
-        List<Course> summerCourses = repository.loadCourses(SEMESTER_SUMMER);
-        EnrollmentRunReport report = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_SUMMER);
-        List<EnrollmentResult> results = repository.loadEnrollmentResults(ACADEMIC_YEAR, SEMESTER_SUMMER);
-        List<String> semesters = repository.loadSemestersWithResults();
+        EnrollmentRunReport semesterAReport = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_A);
+        Map<String, String> semesterAResults = loadAssignedCourseLists(ACADEMIC_YEAR, SEMESTER_A);
+        int semesterAEnrollments = countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A);
+
+        EnrollmentRunReport semesterBReport = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_B);
+        Map<String, String> semesterBResults = loadAssignedCourseLists(ACADEMIC_YEAR, SEMESTER_B);
 
         // Assert
         assertAll(
-                () -> assertEquals(11, summerCourses.size()),
-                () -> assertEquals(11, report.getStudentsProcessed()),
-                () -> assertEquals(28, report.getRequestedCourses()),
-                () -> assertEquals(19, report.getAssignedCourses()),
-                () -> assertEquals(2, report.getFullAssignments()),
-                () -> assertEquals(8, report.getPartialAssignments()),
-                () -> assertEquals(1, report.getUnassignedStudents()),
-                () -> assertEquals(11, results.size()),
-                () -> assertEquals(2, results.stream().filter(result -> FULL_STATUS.equals(result.getStatus())).count()),
-                () -> assertEquals(8, results.stream().filter(result -> PARTIAL_STATUS.equals(result.getStatus())).count()),
-                () -> assertEquals(1, results.stream().filter(result -> UNASSIGNED_STATUS.equals(result.getStatus())).count()),
-                () -> assertTrue(semesters.contains(SEMESTER_SUMMER)),
-                () -> assertEquals(19, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(12, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(12, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(12, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(13, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(13, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(14, 13, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(14, 17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(14, 16, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(15, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(16, 20, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(16, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(16, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(18, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(18, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(18, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(19, 21, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(19, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(20, 21, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(20, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(21, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertFalse(isAssigned(21, 20, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(21, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(22, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(22, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertTrue(isAssigned(22, 16, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertEquals(0, countAssignmentsForStudent(17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
-                () -> assertEquals(0, countAssignmentsForCourse(14, ACADEMIC_YEAR, SEMESTER_SUMMER))
+                () -> assertEquals(semesterAReport.getAssignedCourses(), semesterAEnrollments),
+                () -> assertEquals(semesterAEnrollments, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A)),
+                () -> assertEquals(semesterBReport.getAssignedCourses(), countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_B)),
+                () -> assertTrue(semesterAReport.getAssignedCourses() > 0),
+                () -> assertTrue(semesterBReport.getAssignedCourses() > 0),
+                () -> assertEquals(List.of(SEMESTER_A, SEMESTER_B), repository.loadSemestersWithResults()),
+                () -> assertNotEquals(semesterAResults, semesterBResults)
         );
+
+        assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_A, repository);
+        assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_B, repository);
     }
 
     private void useIsolatedDatabaseCopy() throws IOException {
@@ -134,6 +113,97 @@ class GuidewayIntegrationTest {
         Files.copy(sourceDatabase, isolatedDatabase, StandardCopyOption.REPLACE_EXISTING);
         DatabaseConnection.closeConnection();
         System.setProperty("unismart.db.path", isolatedDatabase.toString());
+    }
+
+    private void assertRunRespectsHardConstraints(String academicYear, String semester, GuidewayRepository repository) throws Exception {
+        Map<Integer, Student> studentsById = new LinkedHashMap<>();
+        for (Student student : repository.loadStudents()) {
+            studentsById.put(student.getStudentID(), student);
+        }
+
+        Map<Integer, Course> coursesById = new LinkedHashMap<>();
+        for (Course course : repository.loadCourses(semester)) {
+            coursesById.put(course.getCourseID(), course);
+        }
+
+        Map<Integer, Integer> assignmentsPerCourse = new LinkedHashMap<>();
+        Map<Integer, Integer> mandatoryAssignmentsPerStudent = new LinkedHashMap<>();
+        Map<Integer, List<Course>> assignmentsPerStudent = new LinkedHashMap<>();
+
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT e.StudentID, e.CourseID, e.IsMandatory, c.Semester " +
+                             "FROM Enrollment e " +
+                             "INNER JOIN Courses c ON c.CourseID = e.CourseID " +
+                             "WHERE e.AcademicYear = ? AND e.Semester = ?")) {
+            statement.setString(1, academicYear);
+            statement.setString(2, semester);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    int studentId = resultSet.getInt("StudentID");
+                    int courseId = resultSet.getInt("CourseID");
+                    boolean mandatory = resultSet.getBoolean("IsMandatory");
+                    Course course = coursesById.get(courseId);
+
+                    assertEquals(semester, resultSet.getString("Semester"));
+                    assertTrue(course != null, "Assigned course must belong to the selected semester");
+
+                    assignmentsPerCourse.merge(courseId, 1, Integer::sum);
+                    if (mandatory) {
+                        mandatoryAssignmentsPerStudent.merge(studentId, 1, Integer::sum);
+                    }
+                    assignmentsPerStudent.computeIfAbsent(studentId, ignored -> new ArrayList<>()).add(course);
+                }
+            }
+        }
+
+        for (Map.Entry<Integer, Integer> entry : assignmentsPerCourse.entrySet()) {
+            Course course = coursesById.get(entry.getKey());
+            assertTrue(entry.getValue() <= course.getCapacity(), "Course capacity exceeded for course " + entry.getKey());
+        }
+
+        for (Map.Entry<Integer, Integer> entry : mandatoryAssignmentsPerStudent.entrySet()) {
+            Student student = studentsById.get(entry.getKey());
+            assertTrue(entry.getValue() <= student.getMaxMandatoryCourses(),
+                    "Mandatory limit exceeded for student " + entry.getKey());
+        }
+
+        for (Map.Entry<Integer, List<Course>> entry : assignmentsPerStudent.entrySet()) {
+            List<Course> assignedCourses = entry.getValue();
+            for (int i = 0; i < assignedCourses.size(); i++) {
+                for (int j = i + 1; j < assignedCourses.size(); j++) {
+                    assertFalse(assignedCourses.get(i).overlapsWith(assignedCourses.get(j)),
+                            "Time conflict detected for student " + entry.getKey());
+                }
+            }
+        }
+    }
+
+    private Map<String, String> loadAssignedCourseLists(String academicYear, String semester) throws Exception {
+        Map<String, String> courseListsByStudent = new LinkedHashMap<>();
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT s.ID_Number, c.CourseName " +
+                             "FROM Enrollment e " +
+                             "INNER JOIN Students s ON s.StudentID = e.StudentID " +
+                             "INNER JOIN Courses c ON c.CourseID = e.CourseID " +
+                             "WHERE e.AcademicYear = ? AND e.Semester = ? " +
+                             "ORDER BY s.ID_Number, e.RequestedRank")) {
+            statement.setString(1, academicYear);
+            statement.setString(2, semester);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String studentId = resultSet.getString("ID_Number");
+                    courseListsByStudent.merge(
+                            studentId,
+                            resultSet.getString("CourseName"),
+                            (left, right) -> left + ", " + right
+                    );
+                }
+            }
+        }
+        return courseListsByStudent;
     }
 
     private boolean tableExists(String tableName) throws Exception {
@@ -148,55 +218,23 @@ class GuidewayIntegrationTest {
         }
     }
 
+    private int countPreferences() throws Exception {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT COUNT(*) FROM StudentCoursePreferences")) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
     private int countEnrollmentsForRun(String academicYear, String semester) throws Exception {
         try (Connection connection = DatabaseConnection.getConnection();
              PreparedStatement statement = connection.prepareStatement(
                      "SELECT COUNT(*) FROM Enrollment WHERE AcademicYear = ? AND Semester = ?")) {
             statement.setString(1, academicYear);
             statement.setString(2, semester);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getInt(1);
-            }
-        }
-    }
-
-    private boolean isAssigned(int studentId, int courseId, String academicYear, String semester) throws Exception {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT COUNT(*) FROM Enrollment WHERE StudentID = ? AND CourseID = ? AND AcademicYear = ? AND Semester = ?")) {
-            statement.setInt(1, studentId);
-            statement.setInt(2, courseId);
-            statement.setString(3, academicYear);
-            statement.setString(4, semester);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getInt(1) > 0;
-            }
-        }
-    }
-
-    private int countAssignmentsForStudent(int studentId, String academicYear, String semester) throws Exception {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT COUNT(*) FROM Enrollment WHERE StudentID = ? AND AcademicYear = ? AND Semester = ?")) {
-            statement.setInt(1, studentId);
-            statement.setString(2, academicYear);
-            statement.setString(3, semester);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                resultSet.next();
-                return resultSet.getInt(1);
-            }
-        }
-    }
-
-    private int countAssignmentsForCourse(int courseId, String academicYear, String semester) throws Exception {
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT COUNT(*) FROM Enrollment WHERE CourseID = ? AND AcademicYear = ? AND Semester = ?")) {
-            statement.setInt(1, courseId);
-            statement.setString(2, academicYear);
-            statement.setString(3, semester);
             try (ResultSet resultSet = statement.executeQuery()) {
                 resultSet.next();
                 return resultSet.getInt(1);

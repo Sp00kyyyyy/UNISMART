@@ -1,3 +1,4 @@
 JAVA_MAIN_PROJ/target/
 JAVA_MAIN_PROJ/.idea/
 JAVA_MAIN_PROJ/*.class
+JAVA_MAIN_PROJ/src/main/resources/Ucanaccess_*/

@@ -23,10 +23,10 @@ class HybridEnrollmentServiceTest {
     void runEnrollmentGivesTheSingleSeatToTheMandatoryStudent() {
         // Arrange
         Course sharedCourse = course(1, "Algorithms", "Monday", "10:00", "12:00", 1, "Fall");
-        Student electiveStudent = student(1, "Ada", "OTHER", 1, 1, 4, 95.0, 5, List.of(
+        Student electiveStudent = student(1, "Ada", "OTHER", 1, 1, 4, 95.0, 5, "", "Monday,Tuesday,Wednesday,Thursday,Friday", List.of(
                 new CoursePreference(1, 1)
         ));
-        Student mandatoryStudent = student(2, "Grace", "CS", 1, 4, 1, 60.0, 5, List.of(
+        Student mandatoryStudent = student(2, "Grace", "CS", 1, 4, 1, 60.0, 5, "", "Monday,Tuesday,Wednesday,Thursday,Friday", List.of(
                 new CoursePreference(1, 1)
         ));
 
@@ -56,7 +56,7 @@ class HybridEnrollmentServiceTest {
         // Arrange
         Course firstMandatory = course(1, "Algorithms", "Monday", "09:00", "11:00", 20, "Spring");
         Course secondMandatory = course(2, "Databases", "Tuesday", "09:00", "11:00", 20, "Spring");
-        Student student = student(1, "Dana", "CS", 1, 1, 3, 88.0, 1, List.of(
+        Student student = student(1, "Dana", "CS", 1, 1, 3, 88.0, 1, "", "Monday,Tuesday,Wednesday,Thursday,Friday", List.of(
                 new CoursePreference(1, 1),
                 new CoursePreference(2, 2)
         ));
@@ -90,7 +90,7 @@ class HybridEnrollmentServiceTest {
         // Arrange
         Course lowerRankedCourse = course(1, "Algorithms", "Monday", "10:00", "12:00", 20, "Summer");
         Course higherRankedCourse = course(2, "Networks", "Monday", "11:00", "13:00", 20, "Summer");
-        Student student = student(1, "Noa", "OTHER", 1, 2, 2, 84.0, 5, List.of(
+        Student student = student(1, "Noa", "OTHER", 1, 2, 2, 84.0, 5, "", "Monday,Tuesday,Wednesday,Thursday,Friday", List.of(
                 new CoursePreference(1, 2),
                 new CoursePreference(2, 1)
         ));
@@ -116,6 +116,114 @@ class HybridEnrollmentServiceTest {
         );
     }
 
+    @Test
+    void runEnrollmentUsesPreferenceScoreToBreakEqualRankOverlap() {
+        // Arrange
+        Course lowerScoredCourse = course(1, "Lab A", "Tuesday", "13:00", "16:00", 20, "Spring");
+        Course higherScoredCourse = course(2, "Lab B", "Tuesday", "14:00", "17:00", 20, "Spring");
+        Student student = student(
+                1,
+                "Tal",
+                "OTHER",
+                1,
+                2,
+                2,
+                80.0,
+                5,
+                "\u05E2\u05E8\u05D1",
+                "Tuesday",
+                List.of(
+                        new CoursePreference(1, 1),
+                        new CoursePreference(2, 1)
+                )
+        );
+
+        StubGuidewayRepository repository = new StubGuidewayRepository(
+                List.of(student),
+                List.of(lowerScoredCourse, higherScoredCourse),
+                defaultConstraints(),
+                List.of()
+        );
+        HybridEnrollmentService service = new HybridEnrollmentService(repository);
+
+        // Act
+        service.runEnrollment("2025-2026", "Spring");
+
+        // Assert
+        assertAll(
+                () -> assertEquals(1, repository.savedDecisions().size()),
+                () -> assertEquals(2, repository.savedDecisions().getFirst().getCourseId()),
+                () -> assertEquals(1, repository.savedDecisions().getFirst().getRequestedRank())
+        );
+    }
+
+    @Test
+    void runEnrollmentFallsBackWhenTheMandatoryStudentGetsTheContestedSeat() {
+        // Arrange
+        Course contestedSeat = course(1, "Operating Systems", "Monday", "10:00", "12:00", 1, "Spring");
+        Course fallbackCourse = course(2, "Databases", "Tuesday", "10:00", "12:00", 1, "Spring");
+        Student electiveStudent = student(
+                1,
+                "Lior",
+                "OTHER",
+                1,
+                1,
+                3,
+                89.0,
+                5,
+                "",
+                "Monday,Tuesday,Wednesday,Thursday,Friday",
+                List.of(
+                        new CoursePreference(1, 1),
+                        new CoursePreference(2, 2)
+                )
+        );
+        Student mandatoryStudent = student(
+                2,
+                "Maya",
+                "CS",
+                1,
+                4,
+                1,
+                70.0,
+                5,
+                "",
+                "Monday,Tuesday,Wednesday,Thursday,Friday",
+                List.of(new CoursePreference(1, 1))
+        );
+
+        StubGuidewayRepository repository = new StubGuidewayRepository(
+                List.of(electiveStudent, mandatoryStudent),
+                List.of(contestedSeat, fallbackCourse),
+                defaultConstraints(),
+                List.of(new CourseRequirement(1, "CS", 1, true))
+        );
+        HybridEnrollmentService service = new HybridEnrollmentService(repository);
+
+        // Act
+        EnrollmentRunReport report = service.runEnrollment("2025-2026", "Spring");
+        Map<Integer, Integer> decisionCountsByCourse = repository.savedDecisions().stream()
+                .collect(Collectors.toMap(
+                        EnrollmentDecision::getCourseId,
+                        ignored -> 1,
+                        Integer::sum,
+                        LinkedHashMap::new
+                ));
+
+        // Assert
+        assertAll(
+                () -> assertEquals(2, repository.savedDecisions().size()),
+                () -> assertTrue(repository.savedDecisions().stream()
+                        .anyMatch(decision -> decision.getStudentId() == 2 && decision.getCourseId() == 1)),
+                () -> assertTrue(repository.savedDecisions().stream()
+                        .anyMatch(decision -> decision.getStudentId() == 1 && decision.getCourseId() == 2)),
+                () -> assertEquals(1, decisionCountsByCourse.get(1)),
+                () -> assertEquals(1, decisionCountsByCourse.get(2)),
+                () -> assertEquals(1, report.getFullAssignments()),
+                () -> assertEquals(1, report.getPartialAssignments())
+        );
+    }
+
     private static Student student(
             int studentId,
             String fullName,
@@ -125,6 +233,8 @@ class HybridEnrollmentServiceTest {
             int seniority,
             double gpa,
             int maxMandatoryCourses,
+            String timePreference,
+            String preferredDays,
             List<CoursePreference> preferences
     ) {
         Student student = new Student();
@@ -137,8 +247,8 @@ class HybridEnrollmentServiceTest {
         student.setSeniority(seniority);
         student.setGpa(gpa);
         student.setMaxMandatoryCourses(maxMandatoryCourses);
-        student.setTimePreference("");
-        student.setPreferredDays("Monday,Tuesday,Wednesday,Thursday,Friday");
+        student.setTimePreference(timePreference);
+        student.setPreferredDays(preferredDays);
         student.setPreferences(preferences);
         return student;
     }

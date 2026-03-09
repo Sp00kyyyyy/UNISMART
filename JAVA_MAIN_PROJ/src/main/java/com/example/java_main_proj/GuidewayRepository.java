@@ -19,6 +19,8 @@ import java.util.TreeSet;
 
 public class GuidewayRepository {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+    private static final String SEMESTER_A = "סמסטר א'";
+    private static final String SEMESTER_B = "סמסטר ב'";
 
     public List<Student> loadStudents() {
         Connection connection = DatabaseConnection.getConnection();
@@ -255,30 +257,7 @@ public class GuidewayRepository {
     }
 
     public List<String> loadSemestersWithResults() {
-        Connection connection = DatabaseConnection.getConnection();
-        Set<String> values = new TreeSet<>(
-                Comparator.comparingInt(this::semesterRank).thenComparing(value -> value == null ? "" : value)
-        );
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT DISTINCT Semester FROM Enrollment WHERE Semester IS NOT NULL")) {
-            while (resultSet.next()) {
-                String semester = resultSet.getString("Semester");
-                if (semester != null && !semester.isBlank()) {
-                    values.add(semester);
-                }
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load semesters", exception);
-        }
-
-        if (values.isEmpty()) {
-            values.add("סמסטר א'");
-            values.add("סמסטר ב'");
-        }
-
-        return new ArrayList<>(values);
+        return List.of(SEMESTER_A, SEMESTER_B);
     }
 
     private Map<Integer, Integer> buildRequestedCountsByStudent(Iterable<Student> students, String semester) {
@@ -369,15 +348,6 @@ public class GuidewayRepository {
             throw new IllegalStateException("Failed to compute next identifier for " + tableName, exception);
         }
         return 1;
-    }
-
-    private int semesterRank(String semester) {
-        return switch (semester) {
-            case "סמסטר א'" -> 1;
-            case "סמסטר ב'" -> 2;
-            case "סמסטר קיץ" -> 3;
-            default -> 99;
-        };
     }
 
     private String formatTime(Time time) {
