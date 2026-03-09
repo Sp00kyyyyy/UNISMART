@@ -115,7 +115,12 @@ public final class DatabaseBootstrap {
                 new EdgeCaseStudentSeed(14, "גל חפיפה", "300000014", 2, "תרחיש קיץ", 2, 2, 84.0, "בוקר", "ראשון,חמישי", 5),
                 new EdgeCaseStudentSeed(15, "נועה חלופה", "300000015", 4, "תרחיש קיץ", 1, 4, 91.0, "בוקר", "רביעי,חמישי", 4),
                 new EdgeCaseStudentSeed(16, "רז ערב", "300000016", 3, "תרחיש קיץ", 2, 3, 87.0, "ערב", "חמישי", 4),
-                new EdgeCaseStudentSeed(17, "איל מלא בלבד", "300000017", 3, "תרחיש קיץ", 3, 3, 79.0, "בוקר", "רביעי", 4)
+                new EdgeCaseStudentSeed(17, "איל מלא בלבד", "300000017", 3, "תרחיש קיץ", 3, 3, 79.0, "בוקר", "רביעי", 4),
+                new EdgeCaseStudentSeed(18, "אור חובה אוטומטי", "300000018", 1, "תרחיש קיץ", 2, 1, 90.0, "בוקר", "שלישי,רביעי", 2),
+                new EdgeCaseStudentSeed(19, "ליה עדיפות", "300000019", 2, "תרחיש קיץ", 1, 3, 93.0, "בוקר", "רביעי", 4),
+                new EdgeCaseStudentSeed(20, "דן גיבוי מושב", "300000020", 2, "תרחיש קיץ", 3, 2, 82.0, "בוקר", "רביעי", 4),
+                new EdgeCaseStudentSeed(21, "יעל בוקר", "300000021", 2, "תרחיש קיץ", 2, 2, 86.0, "בוקר", "רביעי,חמישי", 4),
+                new EdgeCaseStudentSeed(22, "תום מלא גמיש", "300000022", 3, "תרחיש קיץ", 3, 3, 85.0, "", "שלישי,רביעי,חמישי", 4)
         );
 
         for (EdgeCaseStudentSeed seed : seeds) {
@@ -160,9 +165,11 @@ public final class DatabaseBootstrap {
                 new EdgeCaseCourseSeed(15, "מעבדת קיץ חובה ב", "חובה", "ד\"ר אלון רז", "שלישי", "09:00", "11:00", 2, 0, "סמסטר קיץ"),
                 new EdgeCaseCourseSeed(16, "סמינר ערב קיץ", "בחירה", "ד\"ר מיכל ברק", "חמישי", "17:00", "19:00", 3, 0, "סמסטר קיץ"),
                 new EdgeCaseCourseSeed(17, "תרגול קיץ חופף", "בחירה", "ד\"ר נועה שלו", "ראשון", "09:30", "11:30", 2, 0, "סמסטר קיץ"),
-                new EdgeCaseCourseSeed(18, "מעבדת פרויקט קיץ", "בחירה", "ד\"ר אורי בר", "שלישי", "12:00", "14:00", 3, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(18, "מעבדת פרויקט קיץ", "בחירה", "ד\"ר אורי בר", "שלישי", "12:00", "14:00", 5, 0, "סמסטר קיץ"),
                 new EdgeCaseCourseSeed(19, "סדנת צהריים קיץ", "בחירה", "ד\"ר מיה שלו", "חמישי", "13:00", "15:00", 3, 0, "סמסטר קיץ"),
-                new EdgeCaseCourseSeed(20, "סדנת ערב מתנגשת", "בחירה", "ד\"ר תמר אור", "חמישי", "14:00", "16:00", 3, 0, "סמסטר קיץ")
+                new EdgeCaseCourseSeed(20, "סדנת ערב מתנגשת", "בחירה", "ד\"ר תמר אור", "חמישי", "14:00", "16:00", 3, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(21, "סמינר ביקוש גבוה", "בחירה", "ד\"ר ניר שדה", "רביעי", "09:00", "11:00", 1, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(22, "מעבדה חלופית", "בחירה", "ד\"ר ליאת שחר", "רביעי", "12:00", "14:00", 5, 0, "סמסטר קיץ")
         );
 
         for (EdgeCaseCourseSeed seed : seeds) {
@@ -372,6 +379,38 @@ public final class DatabaseBootstrap {
             }
             case 17 -> {
                 return List.of(new StudentPreferenceSeed(14, 1));
+            }
+            case 18 -> {
+                return List.of(
+                        new StudentPreferenceSeed(18, 1),
+                        new StudentPreferenceSeed(22, 2)
+                );
+            }
+            case 19 -> {
+                return List.of(
+                        new StudentPreferenceSeed(21, 1),
+                        new StudentPreferenceSeed(22, 2)
+                );
+            }
+            case 20 -> {
+                return List.of(
+                        new StudentPreferenceSeed(21, 1),
+                        new StudentPreferenceSeed(22, 2)
+                );
+            }
+            case 21 -> {
+                return List.of(
+                        new StudentPreferenceSeed(19, 1),
+                        new StudentPreferenceSeed(20, 1),
+                        new StudentPreferenceSeed(22, 2)
+                );
+            }
+            case 22 -> {
+                return List.of(
+                        new StudentPreferenceSeed(18, 1),
+                        new StudentPreferenceSeed(22, 2),
+                        new StudentPreferenceSeed(16, 3)
+                );
             }
             default -> {
                 return List.of();

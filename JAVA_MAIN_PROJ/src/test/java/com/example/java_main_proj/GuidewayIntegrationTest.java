@@ -50,7 +50,7 @@ class GuidewayIntegrationTest {
 
         // Assert
         assertAll(
-                () -> assertEquals(17, students.size()),
+                () -> assertEquals(22, students.size()),
                 () -> assertEquals(7, constraints.size()),
                 () -> assertEquals(22, requirements.size()),
                 () -> assertEquals(11, report.getStudentsProcessed()),
@@ -84,18 +84,19 @@ class GuidewayIntegrationTest {
 
         // Assert
         assertAll(
-                () -> assertEquals(9, summerCourses.size()),
-                () -> assertEquals(6, report.getStudentsProcessed()),
-                () -> assertEquals(14, report.getRequestedCourses()),
-                () -> assertEquals(8, report.getAssignedCourses()),
-                () -> assertEquals(0, report.getFullAssignments()),
-                () -> assertEquals(5, report.getPartialAssignments()),
+                () -> assertEquals(11, summerCourses.size()),
+                () -> assertEquals(11, report.getStudentsProcessed()),
+                () -> assertEquals(28, report.getRequestedCourses()),
+                () -> assertEquals(19, report.getAssignedCourses()),
+                () -> assertEquals(2, report.getFullAssignments()),
+                () -> assertEquals(8, report.getPartialAssignments()),
                 () -> assertEquals(1, report.getUnassignedStudents()),
-                () -> assertEquals(6, results.size()),
-                () -> assertEquals(5, results.stream().filter(result -> PARTIAL_STATUS.equals(result.getStatus())).count()),
+                () -> assertEquals(11, results.size()),
+                () -> assertEquals(2, results.stream().filter(result -> FULL_STATUS.equals(result.getStatus())).count()),
+                () -> assertEquals(8, results.stream().filter(result -> PARTIAL_STATUS.equals(result.getStatus())).count()),
                 () -> assertEquals(1, results.stream().filter(result -> UNASSIGNED_STATUS.equals(result.getStatus())).count()),
                 () -> assertTrue(semesters.contains(SEMESTER_SUMMER)),
-                () -> assertEquals(8, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertEquals(19, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertTrue(isAssigned(12, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertFalse(isAssigned(12, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertTrue(isAssigned(12, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
@@ -108,6 +109,19 @@ class GuidewayIntegrationTest {
                 () -> assertTrue(isAssigned(16, 20, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertFalse(isAssigned(16, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertTrue(isAssigned(16, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(18, 12, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(18, 15, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(18, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(19, 21, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(19, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(20, 21, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(20, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(21, 19, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertFalse(isAssigned(21, 20, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(21, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(22, 18, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(22, 22, ACADEMIC_YEAR, SEMESTER_SUMMER)),
+                () -> assertTrue(isAssigned(22, 16, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertEquals(0, countAssignmentsForStudent(17, ACADEMIC_YEAR, SEMESTER_SUMMER)),
                 () -> assertEquals(0, countAssignmentsForCourse(14, ACADEMIC_YEAR, SEMESTER_SUMMER))
         );

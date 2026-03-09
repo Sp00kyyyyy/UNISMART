@@ -193,7 +193,7 @@ public class GuidewayRepository {
             studentsById.put(student.getStudentID(), student);
         }
 
-        Map<Integer, Integer> requestedCounts = loadRequestedCountsByStudent(semester);
+        Map<Integer, Integer> requestedCounts = buildRequestedCountsByStudent(studentsById.values(), semester);
         Map<Integer, List<String>> assignedCourseNames = loadAssignedCourseNamesByStudent(academicYear, semester);
         List<EnrollmentResult> results = new ArrayList<>();
 
@@ -281,25 +281,35 @@ public class GuidewayRepository {
         return new ArrayList<>(values);
     }
 
-    private Map<Integer, Integer> loadRequestedCountsByStudent(String semester) {
-        Connection connection = DatabaseConnection.getConnection();
+    private Map<Integer, Integer> buildRequestedCountsByStudent(Iterable<Student> students, String semester) {
+        List<Course> offeredCourses = loadCourses(semester);
+        Set<Integer> offeredCourseIds = offeredCourses.stream()
+                .map(Course::getCourseID)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Map<String, Set<Integer>> mandatoryCoursesByTrackAndYear = new HashMap<>();
+        for (CourseRequirement requirement : loadCourseRequirements()) {
+            if (!requirement.isMandatory() || !offeredCourseIds.contains(requirement.getCourseId())) {
+                continue;
+            }
+            mandatoryCoursesByTrackAndYear
+                    .computeIfAbsent(requirement.getTrack() + "|" + requirement.getYear(), ignored -> new java.util.LinkedHashSet<>())
+                    .add(requirement.getCourseId());
+        }
+
         Map<Integer, Integer> requestedCounts = new HashMap<>();
-
-        String sql = "SELECT p.StudentID, COUNT(*) AS RequestedCount " +
-                "FROM StudentCoursePreferences p " +
-                "INNER JOIN Courses c ON c.CourseID = p.CourseID " +
-                "WHERE c.Semester = ? " +
-                "GROUP BY p.StudentID";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, semester);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    requestedCounts.put(resultSet.getInt("StudentID"), resultSet.getInt("RequestedCount"));
+        for (Student student : students) {
+            Set<Integer> requestedCourseIds = new java.util.LinkedHashSet<>();
+            for (CoursePreference preference : student.getPreferences()) {
+                if (offeredCourseIds.contains(preference.getCourseId())) {
+                    requestedCourseIds.add(preference.getCourseId());
                 }
             }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load request counts", exception);
+            requestedCourseIds.addAll(mandatoryCoursesByTrackAndYear.getOrDefault(
+                    student.getTrack() + "|" + student.getYear(),
+                    Set.of()
+            ));
+            requestedCounts.put(student.getStudentID(), requestedCourseIds.size());
         }
 
         return requestedCounts;
