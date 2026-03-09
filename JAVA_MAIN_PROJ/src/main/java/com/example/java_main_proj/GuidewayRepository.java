@@ -158,6 +158,10 @@ public class GuidewayRepository {
             throw new IllegalStateException("Failed to clear previous enrollment results", exception);
         }
 
+        if (decisions.isEmpty()) {
+            return;
+        }
+
         int nextEnrollmentId = nextIdentifier(connection, "Enrollment", "EnrollmentID");
 
         try (PreparedStatement insertStatement = connection.prepareStatement(

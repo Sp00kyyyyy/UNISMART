@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -14,16 +15,10 @@ import java.util.Map;
 import java.util.Set;
 
 public final class DatabaseBootstrap {
-    private static boolean synchronizedOnce;
-
     private DatabaseBootstrap() {
     }
 
     public static synchronized void synchronize(Connection connection) {
-        if (synchronizedOnce) {
-            return;
-        }
-
         try {
             boolean autoCommit = connection.getAutoCommit();
             connection.setAutoCommit(false);
@@ -31,13 +26,14 @@ public final class DatabaseBootstrap {
                 ensureGuidewaySchema(connection);
                 dropObsoleteTables(connection);
                 normalizeStudentData(connection);
+                applyEdgeCaseStudentSettings(connection);
                 normalizeCourseData(connection);
+                upsertEdgeCaseCourses(connection);
                 normalizeEnrollmentSemesters(connection);
                 seedConstraints(connection);
                 seedCourseTrackRules(connection);
                 seedStudentPreferences(connection);
                 connection.commit();
-                synchronizedOnce = true;
             } catch (SQLException exception) {
                 connection.rollback();
                 throw exception;
@@ -105,6 +101,15 @@ public final class DatabaseBootstrap {
         }
     }
 
+    private static void applyEdgeCaseStudentSettings(Connection connection) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "UPDATE Students SET MaxMandatoryCourses=? WHERE StudentID=?")) {
+            statement.setInt(1, 1);
+            statement.setInt(2, 11);
+            statement.executeUpdate();
+        }
+    }
+
     private static void normalizeCourseData(Connection connection) throws SQLException {
         List<CourseDisplaySeed> seeds = List.of(
                 new CourseDisplaySeed(1, "מבוא למדעי המחשב", "חובה", "פרופ מרדכי כהן", "ראשון", "סמסטר א'"),
@@ -131,6 +136,21 @@ public final class DatabaseBootstrap {
                 statement.addBatch();
             }
             statement.executeBatch();
+        }
+    }
+
+    private static void upsertEdgeCaseCourses(Connection connection) throws SQLException {
+        List<EdgeCaseCourseSeed> seeds = List.of(
+                new EdgeCaseCourseSeed(12, "סדנת קיץ חובה", "חובה", "ד\"ר יעל בן דוד", "ראשון", "09:00", "11:00", 1, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(13, "מעבדת קיץ חופפת", "בחירה", "ד\"ר עומר לוי", "ראשון", "10:00", "12:00", 2, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(14, "קורס קיץ מלא", "בחירה", "פרופ' דנה כהן", "רביעי", "14:00", "16:00", 1, 1, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(15, "מעבדת קיץ חובה ב", "חובה", "ד\"ר אלון רז", "שלישי", "09:00", "11:00", 2, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(16, "סמינר ערב קיץ", "בחירה", "ד\"ר מיכל ברק", "חמישי", "17:00", "19:00", 3, 0, "סמסטר קיץ"),
+                new EdgeCaseCourseSeed(17, "תרגול קיץ חופף", "בחירה", "ד\"ר נועה שלו", "ראשון", "09:30", "11:30", 2, 0, "סמסטר קיץ")
+        );
+
+        for (EdgeCaseCourseSeed seed : seeds) {
+            upsertCourse(connection, seed);
         }
     }
 
@@ -202,7 +222,9 @@ public final class DatabaseBootstrap {
                 new CourseTrackRuleSeed(17, 10, "מערכות מידע", 3, false),
                 new CourseTrackRuleSeed(18, 5, "מדעי המחשב", 4, false),
                 new CourseTrackRuleSeed(19, 8, "מדעי המחשב", 4, false),
-                new CourseTrackRuleSeed(20, 10, "הנדסת תוכנה", 4, false)
+                new CourseTrackRuleSeed(20, 10, "הנדסת תוכנה", 4, false),
+                new CourseTrackRuleSeed(21, 12, "מדעי המחשב", 1, true),
+                new CourseTrackRuleSeed(22, 15, "מדעי המחשב", 1, true)
         );
 
         try (Statement deleteStatement = connection.createStatement()) {
@@ -237,6 +259,7 @@ public final class DatabaseBootstrap {
                 "INSERT INTO StudentCoursePreferences (PreferenceID, StudentID, CourseID, PreferenceRank) VALUES (?, ?, ?, ?)")) {
             for (StudentSeed student : students) {
                 List<Integer> rankedCourses = buildRankedCoursePreferences(student, coursesById, mandatoryCoursesByTrackAndYear);
+                appendEdgeCasePreferences(student.studentId(), rankedCourses, coursesById);
                 int rank = 1;
                 for (Integer courseId : rankedCourses) {
                     insertStatement.setInt(1, nextId++);
@@ -259,10 +282,12 @@ public final class DatabaseBootstrap {
 
         List<Integer> mandatoryCourses = new ArrayList<>(mandatoryCoursesByTrackAndYear.getOrDefault(
                 trackYearKey(student.track(), student.year()), Set.of()));
+        mandatoryCourses.removeIf(courseId -> isSummerCourse(coursesById.get(courseId)));
         mandatoryCourses.sort(Integer::compareTo);
         rankedCourseIds.addAll(mandatoryCourses);
 
         List<CourseSeed> optionalCourses = coursesById.values().stream()
+                .filter(course -> !isSummerCourse(course))
                 .filter(course -> !rankedCourseIds.contains(course.courseId()))
                 .sorted(Comparator
                         .comparingInt((CourseSeed course) -> compatibilityScore(student, course))
@@ -278,6 +303,45 @@ public final class DatabaseBootstrap {
         }
 
         return rankedCourseIds;
+    }
+
+    private static void appendEdgeCasePreferences(
+            int studentId,
+            List<Integer> rankedCourseIds,
+            Map<Integer, CourseSeed> coursesById
+    ) {
+        switch (studentId) {
+            case 11 -> {
+                appendIfPresent(rankedCourseIds, coursesById, 12);
+                appendIfPresent(rankedCourseIds, coursesById, 15);
+                appendIfPresent(rankedCourseIds, coursesById, 13);
+            }
+            case 8 -> {
+                appendIfPresent(rankedCourseIds, coursesById, 12);
+                appendIfPresent(rankedCourseIds, coursesById, 16);
+            }
+            case 2 -> {
+                appendIfPresent(rankedCourseIds, coursesById, 13);
+                appendIfPresent(rankedCourseIds, coursesById, 17);
+            }
+            case 3 -> appendIfPresent(rankedCourseIds, coursesById, 14);
+            default -> {
+            }
+        }
+    }
+
+    private static void appendIfPresent(
+            List<Integer> rankedCourseIds,
+            Map<Integer, CourseSeed> coursesById,
+            int courseId
+    ) {
+        if (coursesById.containsKey(courseId) && !rankedCourseIds.contains(courseId)) {
+            rankedCourseIds.add(courseId);
+        }
+    }
+
+    private static boolean isSummerCourse(CourseSeed course) {
+        return course != null && "סמסטר קיץ".equals(course.semester());
     }
 
     private static int compatibilityScore(StudentSeed student, CourseSeed course) {
@@ -365,6 +429,42 @@ public final class DatabaseBootstrap {
             }
         }
         return rules;
+    }
+
+    private static void upsertCourse(Connection connection, EdgeCaseCourseSeed seed) throws SQLException {
+        try (PreparedStatement updateStatement = connection.prepareStatement(
+                "UPDATE Courses SET CourseName=?, CourseType=?, Lecturer=?, Day=?, StartTime=?, EndTime=?, Capacity=?, EnrolledStudents=?, Semester=? WHERE CourseID=?")) {
+            updateStatement.setString(1, seed.courseName());
+            updateStatement.setString(2, seed.courseType());
+            updateStatement.setString(3, seed.lecturer());
+            updateStatement.setString(4, seed.day());
+            updateStatement.setTime(5, Time.valueOf(seed.startTime() + ":00"));
+            updateStatement.setTime(6, Time.valueOf(seed.endTime() + ":00"));
+            updateStatement.setInt(7, seed.capacity());
+            updateStatement.setInt(8, seed.enrolledStudents());
+            updateStatement.setString(9, seed.semester());
+            updateStatement.setInt(10, seed.courseId());
+
+            int updated = updateStatement.executeUpdate();
+            if (updated > 0) {
+                return;
+            }
+        }
+
+        try (PreparedStatement insertStatement = connection.prepareStatement(
+                "INSERT INTO Courses (CourseID, CourseName, CourseType, Lecturer, Day, StartTime, EndTime, Capacity, EnrolledStudents, Semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            insertStatement.setInt(1, seed.courseId());
+            insertStatement.setString(2, seed.courseName());
+            insertStatement.setString(3, seed.courseType());
+            insertStatement.setString(4, seed.lecturer());
+            insertStatement.setString(5, seed.day());
+            insertStatement.setTime(6, Time.valueOf(seed.startTime() + ":00"));
+            insertStatement.setTime(7, Time.valueOf(seed.endTime() + ":00"));
+            insertStatement.setInt(8, seed.capacity());
+            insertStatement.setInt(9, seed.enrolledStudents());
+            insertStatement.setString(10, seed.semester());
+            insertStatement.executeUpdate();
+        }
     }
 
     private static Set<String> parsePreferredDays(String value) {
@@ -460,6 +560,20 @@ public final class DatabaseBootstrap {
     }
 
     private record CourseTrackRuleSeed(int ruleId, int courseId, String track, int year, boolean mandatory) {
+    }
+
+    private record EdgeCaseCourseSeed(
+            int courseId,
+            String courseName,
+            String courseType,
+            String lecturer,
+            String day,
+            String startTime,
+            String endTime,
+            int capacity,
+            int enrolledStudents,
+            String semester
+    ) {
     }
 
     private record StudentSeed(
