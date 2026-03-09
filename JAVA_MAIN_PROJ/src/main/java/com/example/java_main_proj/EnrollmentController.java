@@ -78,14 +78,6 @@ public class EnrollmentController {
     }
 
     @FXML
-    private void stopEnrollment() {
-        logArea.appendText("העצירה הידנית זמינה למסך בלבד. להרצה חדשה בחרו נתונים והריצו שוב." + System.lineSeparator());
-        progressBar.setProgress(0);
-        progressLabel.setText("0%");
-        statusLabel.setText("המסך אופס.");
-    }
-
-    @FXML
     private void clearLog() {
         logArea.clear();
         progressBar.setProgress(0);

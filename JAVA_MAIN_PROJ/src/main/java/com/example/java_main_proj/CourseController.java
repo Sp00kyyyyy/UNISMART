@@ -3,7 +3,6 @@ package com.example.java_main_proj;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -93,31 +92,6 @@ public class CourseController {
     }
 
     @FXML
-    private void addCourse() {
-        showAlert("הוספת קורס", "מסך העריכה עדיין לא חובר למסד הנתונים.");
-    }
-
-    @FXML
-    private void editCourse() {
-        Course selected = coursesTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("שגיאה", "יש לבחור קורס לעריכה.");
-            return;
-        }
-        showAlert("עריכת קורס", "מסך העריכה עדיין לא חובר למסד הנתונים.");
-    }
-
-    @FXML
-    private void deleteCourse() {
-        Course selected = coursesTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("שגיאה", "יש לבחור קורס למחיקה.");
-            return;
-        }
-        showAlert("מחיקת קורס", "מחיקה ישירה עדיין לא מופעלת.");
-    }
-
-    @FXML
     private void refreshTable() {
         loadCourses();
         statusLabel.setText("רשימת הקורסים רועננה.");
@@ -127,13 +101,5 @@ public class CourseController {
     private void closeWindow() {
         Stage stage = (Stage) coursesTable.getScene().getWindow();
         stage.close();
-    }
-
-    private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }

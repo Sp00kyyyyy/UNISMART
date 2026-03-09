@@ -22,9 +22,6 @@
         <TextField fx:id="searchField" promptText="חיפוש לפי שם קורס" prefWidth="300"/>
         <Button text="חפש" onAction="#searchCourse" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="הוסף קורס" onAction="#addCourse" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-        <Button text="ערוך" onAction="#editCourse" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
-        <Button text="מחק" onAction="#deleteCourse" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
         <Button text="רענן" onAction="#refreshTable" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
     </HBox>
 

@@ -92,8 +92,6 @@
             </padding>
             <Label fx:id="statusLabel" text="מוכן"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="ייצא לקובץ" onAction="#exportResults"
-                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
             <Button text="סגור" onAction="#closeWindow"
                     style="-fx-background-color: #757575; -fx-text-fill: white;"/>
         </HBox>

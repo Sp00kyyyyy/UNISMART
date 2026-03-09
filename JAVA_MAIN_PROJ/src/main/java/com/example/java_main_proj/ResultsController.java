@@ -3,7 +3,6 @@ package com.example.java_main_proj;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -111,15 +110,6 @@ public class ResultsController {
         resultsTable.setItems(allResults);
         updateStatistics();
         statusLabel.setText("המסננים נוקו.");
-    }
-
-    @FXML
-    private void exportResults() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("ייצוא תוצאות");
-        alert.setHeaderText(null);
-        alert.setContentText("ייצוא לקובץ עדיין לא חובר.");
-        alert.showAndWait();
     }
 
     @FXML
