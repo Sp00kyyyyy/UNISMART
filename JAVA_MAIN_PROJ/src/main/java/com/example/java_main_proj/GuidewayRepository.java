@@ -49,11 +49,8 @@ public class GuidewayRepository {
         }
 
         Map<Integer, List<CoursePreference>> preferencesByStudent = loadPreferencesByStudent();
-        Map<Integer, Set<Integer>> completedCoursesByStudent = loadCompletedCoursesByStudent();
-
         for (Student student : students) {
             student.setPreferences(preferencesByStudent.getOrDefault(student.getStudentID(), List.of()));
-            student.setCompletedCourseIds(completedCoursesByStudent.getOrDefault(student.getStudentID(), Set.of()));
         }
 
         students.sort(Comparator
@@ -102,23 +99,6 @@ public class GuidewayRepository {
 
         courses.sort(Comparator.comparing(Course::getCourseID));
         return courses;
-    }
-
-    public Map<Integer, List<Integer>> loadPrerequisitesByCourse() {
-        Connection connection = DatabaseConnection.getConnection();
-        Map<Integer, List<Integer>> prerequisitesByCourse = new HashMap<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT CourseID, PrerequisiteCourseID FROM Prerequisites")) {
-            while (resultSet.next()) {
-                prerequisitesByCourse.computeIfAbsent(resultSet.getInt("CourseID"), ignored -> new ArrayList<>())
-                        .add(resultSet.getInt("PrerequisiteCourseID"));
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load prerequisites", exception);
-        }
-
-        return prerequisitesByCourse;
     }
 
     public List<CourseRequirement> loadCourseRequirements() {
@@ -219,17 +199,17 @@ public class GuidewayRepository {
             int enrolled = assigned.size();
             String status;
             if (requested > 0 && enrolled == requested) {
-                status = "הצלחה מלאה";
+                status = "האלמ החלצה";
             } else if (enrolled > 0) {
-                status = "שיבוץ חלקי";
+                status = "יקלח ץוביש";
             } else {
-                status = "ללא שיבוץ";
+                status = "ץוביש אלל";
             }
 
             results.add(new EnrollmentResult(
                     student.getIdNumber(),
                     student.getFullName(),
-                    "שנה " + student.getYear(),
+                    student.getYear() + " הנש",
                     requested,
                     enrolled,
                     status,
@@ -269,7 +249,9 @@ public class GuidewayRepository {
 
     public List<String> loadSemestersWithResults() {
         Connection connection = DatabaseConnection.getConnection();
-        Set<String> values = new TreeSet<>(Comparator.comparingInt(this::semesterRank));
+        Set<String> values = new TreeSet<>(
+                Comparator.comparingInt(this::semesterRank).thenComparing(value -> value == null ? "" : value)
+        );
 
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(
@@ -285,8 +267,8 @@ public class GuidewayRepository {
         }
 
         if (values.isEmpty()) {
-            values.add("סמסטר א'");
-            values.add("סמסטר ב'");
+            values.add("'א רטסמס");
+            values.add("'ב רטסמס");
         }
 
         return new ArrayList<>(values);
@@ -360,23 +342,6 @@ public class GuidewayRepository {
         return preferencesByStudent;
     }
 
-    private Map<Integer, Set<Integer>> loadCompletedCoursesByStudent() {
-        Connection connection = DatabaseConnection.getConnection();
-        Map<Integer, Set<Integer>> completedByStudent = new HashMap<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT StudentID, CourseID FROM CompletedCourses")) {
-            while (resultSet.next()) {
-                completedByStudent.computeIfAbsent(resultSet.getInt("StudentID"), ignored -> new TreeSet<>())
-                        .add(resultSet.getInt("CourseID"));
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load completed courses", exception);
-        }
-
-        return completedByStudent;
-    }
-
     private int nextIdentifier(Connection connection, String tableName, String columnName) {
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT MAX(" + columnName + ") FROM " + tableName)) {
@@ -391,9 +356,9 @@ public class GuidewayRepository {
 
     private int semesterRank(String semester) {
         return switch (semester) {
-            case "סמסטר א'" -> 1;
-            case "סמסטר ב'" -> 2;
-            case "סמסטר קיץ" -> 3;
+            case "'א רטסמס" -> 1;
+            case "'ב רטסמס" -> 2;
+            case "ץיק רטסמס" -> 3;
             default -> 99;
         };
     }

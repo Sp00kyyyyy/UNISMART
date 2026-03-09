@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.example.java_main_proj.StudentController"
@@ -13,31 +19,31 @@
     </padding>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="חיפוש לפי שם או ת.ז" prefWidth="300"/>
-        <Button text="חפש" onAction="#searchStudent" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <TextField fx:id="searchField" promptText="ז.ת וא םש יפל שופיח" prefWidth="300"/>
+        <Button text="שפח" onAction="#searchStudent" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="הוסף סטודנט" onAction="#addStudent" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-        <Button text="ערוך" onAction="#editStudent" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
-        <Button text="מחק" onAction="#deleteStudent" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
-        <Button text="רענן" onAction="#refreshTable" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
+        <Button text="טנדוטס ףסוה" onAction="#addStudent" style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+        <Button text="ךורע" onAction="#editStudent" style="-fx-background-color: #FF9800; -fx-text-fill: white;"/>
+        <Button text="קחמ" onAction="#deleteStudent" style="-fx-background-color: #F44336; -fx-text-fill: white;"/>
+        <Button text="ןנער" onAction="#refreshTable" style="-fx-background-color: #9E9E9E; -fx-text-fill: white;"/>
     </HBox>
 
     <TableView fx:id="studentsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="idColumn" text="מזהה" prefWidth="60"/>
-            <TableColumn fx:id="nameColumn" text="שם מלא" prefWidth="150"/>
-            <TableColumn fx:id="idNumberColumn" text="ת.ז" prefWidth="100"/>
-            <TableColumn fx:id="yearColumn" text="שנה" prefWidth="60"/>
-            <TableColumn fx:id="trackColumn" text="מסלול" prefWidth="120"/>
-            <TableColumn fx:id="priorityColumn" text="עדיפות" prefWidth="70"/>
-            <TableColumn fx:id="seniorityColumn" text="ותק" prefWidth="60"/>
-            <TableColumn fx:id="gpaColumn" text="ממוצע" prefWidth="70"/>
+            <TableColumn fx:id="idColumn" text="ההזמ" prefWidth="60"/>
+            <TableColumn fx:id="nameColumn" text="אלמ םש" prefWidth="150"/>
+            <TableColumn fx:id="idNumberColumn" text="ז.ת" prefWidth="100"/>
+            <TableColumn fx:id="yearColumn" text="הנש" prefWidth="60"/>
+            <TableColumn fx:id="trackColumn" text="לולסמ" prefWidth="120"/>
+            <TableColumn fx:id="priorityColumn" text="תופידע" prefWidth="70"/>
+            <TableColumn fx:id="seniorityColumn" text="קתו" prefWidth="60"/>
+            <TableColumn fx:id="gpaColumn" text="עצוממ" prefWidth="70"/>
         </columns>
     </TableView>
 
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label fx:id="statusLabel" text="מוכן"/>
+        <Label fx:id="statusLabel" text="ןכומ"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="סגור" onAction="#closeWindow"/>
+        <Button text="רוגס" onAction="#closeWindow"/>
     </HBox>
 </VBox>

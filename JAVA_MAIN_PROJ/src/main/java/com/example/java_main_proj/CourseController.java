@@ -66,9 +66,9 @@ public class CourseController {
             List<Course> courses = repository.loadCourses(null);
             coursesList.addAll(courses);
             coursesTable.setItems(coursesList);
-            statusLabel.setText("נטענו " + courses.size() + " קורסים.");
+            statusLabel.setText(courses.size() + " .םיסרוק ונעטנ");
         } catch (Exception exception) {
-            statusLabel.setText("שגיאה בטעינת הקורסים: " + exception.getMessage());
+            statusLabel.setText(" :םיסרוקה תניעטב האיגש" + exception.getMessage());
             exception.printStackTrace();
         }
     }
@@ -78,7 +78,7 @@ public class CourseController {
         String searchTerm = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
         if (searchTerm.isBlank()) {
             coursesTable.setItems(coursesList);
-            statusLabel.setText("הוצגו כל הקורסים.");
+            statusLabel.setText(".םיסרוקה לכ וגצוה");
             return;
         }
 
@@ -89,38 +89,38 @@ public class CourseController {
                         .collect(Collectors.toList())
         );
         coursesTable.setItems(filtered);
-        statusLabel.setText("נמצאו " + filtered.size() + " קורסים מתאימים.");
+        statusLabel.setText(filtered.size() + " .םימיאתמ םיסרוק ואצמנ");
     }
 
     @FXML
     private void addCourse() {
-        showAlert("הוספת קורס", "מסך העריכה עדיין לא חובר למסד הנתונים.");
+        showAlert("סרוק תפסוה", ".םינותנה דסמל רבוח אל ןיידע הכירעה ךסמ");
     }
 
     @FXML
     private void editCourse() {
         Course selected = coursesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("שגיאה", "יש לבחור קורס לעריכה.");
+            showAlert("האיגש", ".הכירעל סרוק רוחבל שי");
             return;
         }
-        showAlert("עריכת קורס", "מסך העריכה עדיין לא חובר למסד הנתונים.");
+        showAlert("סרוק תכירע", ".םינותנה דסמל רבוח אל ןיידע הכירעה ךסמ");
     }
 
     @FXML
     private void deleteCourse() {
         Course selected = coursesTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("שגיאה", "יש לבחור קורס למחיקה.");
+            showAlert("האיגש", ".הקיחמל סרוק רוחבל שי");
             return;
         }
-        showAlert("מחיקת קורס", "מחיקה ישירה עדיין לא מופעלת.");
+        showAlert("סרוק תקיחמ", ".תלעפומ אל ןיידע הרישי הקיחמ");
     }
 
     @FXML
     private void refreshTable() {
         loadCourses();
-        statusLabel.setText("רשימת הקורסים רועננה.");
+        statusLabel.setText(".הננעור םיסרוקה תמישר");
     }
 
     @FXML

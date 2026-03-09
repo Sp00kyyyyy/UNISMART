@@ -1,9 +1,7 @@
 package com.example.java_main_proj;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Student {
     private int studentID;
@@ -18,7 +16,6 @@ public class Student {
     private String preferredDays;
     private int maxMandatoryCourses;
     private List<CoursePreference> preferences = new ArrayList<>();
-    private Set<Integer> completedCourseIds = new HashSet<>();
 
     public Student() {
     }
@@ -131,14 +128,6 @@ public class Student {
         this.preferences = new ArrayList<>(preferences);
     }
 
-    public Set<Integer> getCompletedCourseIds() {
-        return completedCourseIds;
-    }
-
-    public void setCompletedCourseIds(Set<Integer> completedCourseIds) {
-        this.completedCourseIds = new HashSet<>(completedCourseIds);
-    }
-
     public boolean prefersDay(String day) {
         if (preferredDays == null || preferredDays.isBlank()) {
             return false;
@@ -158,20 +147,12 @@ public class Student {
         }
 
         int startHour = course.getStartLocalTime().getHour();
-        if (timePreference.contains("בוקר")) {
+        if (timePreference.contains("רקוב")) {
             return startHour < 14;
         }
-        if (timePreference.contains("ערב")) {
+        if (timePreference.contains("ברע")) {
             return startHour >= 14;
         }
         return true;
-    }
-
-    public boolean hasCompletedCourse(int courseId) {
-        return completedCourseIds.contains(courseId);
-    }
-
-    public boolean hasAllPrerequisites(List<Integer> prerequisites) {
-        return completedCourseIds.containsAll(prerequisites);
     }
 }

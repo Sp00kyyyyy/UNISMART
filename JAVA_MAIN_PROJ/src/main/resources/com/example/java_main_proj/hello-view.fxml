@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -11,16 +17,16 @@
 
     <top>
         <MenuBar>
-            <Menu text="קבצים">
-                <MenuItem text="יציאה" onAction="#handleExit"/>
+            <Menu text="םיצבק">
+                <MenuItem text="האיצי" onAction="#handleExit"/>
             </Menu>
-            <Menu text="ניהול">
-                <MenuItem text="סטודנטים" onAction="#showStudents"/>
-                <MenuItem text="קורסים" onAction="#showCourses"/>
-                <MenuItem text="שיבוץ" onAction="#showEnrollment"/>
+            <Menu text="לוהינ">
+                <MenuItem text="םיטנדוטס" onAction="#showStudents"/>
+                <MenuItem text="םיסרוק" onAction="#showCourses"/>
+                <MenuItem text="ץוביש" onAction="#showEnrollment"/>
             </Menu>
-            <Menu text="עזרה">
-                <MenuItem text="אודות" onAction="#showAbout"/>
+            <Menu text="הרזע">
+                <MenuItem text="תודוא" onAction="#showAbout"/>
             </Menu>
         </MenuBar>
     </top>
@@ -31,26 +37,26 @@
                 <Insets top="50" right="50" bottom="50" left="50"/>
             </padding>
 
-            <Label text="UniSmart - מערכת שיבוץ סטודנטים"
+            <Label text="UniSmart - םיטנדוטס ץוביש תכרעמ"
                    style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-            <Button text="ניהול סטודנטים" onAction="#showStudents"
+            <Button text="םיטנדוטס לוהינ" onAction="#showStudents"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="ניהול קורסים" onAction="#showCourses"
+            <Button text="םיסרוק לוהינ" onAction="#showCourses"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="ביצוע שיבוץ" onAction="#showEnrollment"
+            <Button text="ץוביש עוציב" onAction="#showEnrollment"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="הצגת תוצאות" onAction="#showResults"
+            <Button text="תואצות תגצה" onAction="#showResults"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Label fx:id="statusLabel" text="מצב: מחובר למסד הנתונים"
+            <Label fx:id="statusLabel" text="םינותנה דסמל רבוחמ :בצמ"
                    style="-fx-text-fill: green; -fx-font-size: 14px;"/>
         </VBox>
     </center>
@@ -60,7 +66,7 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label text="UniSmart © 2025 - יהונתן רפאלי"/>
+            <Label text="UniSmart © 2025 - ילאפר ןתנוהי"/>
         </HBox>
     </bottom>
 </BorderPane>

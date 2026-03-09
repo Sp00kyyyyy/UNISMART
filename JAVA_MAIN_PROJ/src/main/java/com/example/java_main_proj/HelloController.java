@@ -4,8 +4,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 public class HelloController {
@@ -20,10 +20,10 @@ public class HelloController {
 
     private void checkDatabaseConnection() {
         if (DatabaseConnection.testConnection()) {
-            statusLabel.setText("מצב: מחובר למסד הנתונים");
+            statusLabel.setText("םינותנה דסמל רבוחמ :בצמ");
             statusLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px;");
         } else {
-            statusLabel.setText("מצב: שגיאה בחיבור למסד הנתונים");
+            statusLabel.setText("םינותנה דסמל רוביחב האיגש :בצמ");
             statusLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
         }
     }
@@ -35,12 +35,12 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("ניהול סטודנטים");
+            stage.setTitle("םיטנדוטס לוהינ");
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            showAlert("שגיאה", "לא ניתן לפתוח את חלון ניהול הסטודנטים: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            showAlert("האיגש", " :םיטנדוטסה לוהינ ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
@@ -51,15 +51,14 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("ניהול קורסים");
+            stage.setTitle("םיסרוק לוהינ");
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            showAlert("שגיאה", "לא ניתן לפתוח את חלון ניהול הקורסים: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            showAlert("האיגש", " :םיסרוקה לוהינ ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            exception.printStackTrace();
         }
     }
-
 
     @FXML
     private void showEnrollment() {
@@ -68,12 +67,12 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("ביצוע שיבוץ");
+            stage.setTitle("ץוביש עוציב");
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            showAlert("שגיאה", "לא ניתן לפתוח את חלון ביצוע השיבוץ: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            showAlert("האיגש", " :ץובישה עוציב ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
@@ -84,22 +83,21 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("הצגת תוצאות");
+            stage.setTitle("תואצות תגצה");
             stage.setScene(new Scene(root));
             stage.show();
-        } catch (Exception e) {
-            showAlert("שגיאה", "לא ניתן לפתוח את חלון התוצאות: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception exception) {
+            showAlert("האיגש", " :תואצותה ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            exception.printStackTrace();
         }
     }
 
-
     @FXML
     private void showAbout() {
-        showAlert("אודות המערכת",
-                "UniSmart - מערכת שיבוץ סטודנטים\n" +
-                        "פותח על ידי: יהונתן רפאלי\n" +
-                        "גרסה: 1.0");
+        showAlert("תכרעמה תודוא",
+                "UniSmart - םיטנדוטס ץוביש תכרעמ\n" +
+                        "ילאפר ןתנוהי :ידי לע חתופ\n" +
+                        "0.1 :הסרג");
     }
 
     @FXML

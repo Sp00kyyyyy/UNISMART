@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -11,7 +19,7 @@
 
     <top>
         <VBox spacing="10" style="-fx-background-color: #FF9800; -fx-padding: 15;">
-            <Label text="ביצוע שיבוץ סטודנטים - אלגוריתם היברידי"
+            <Label text="ידירביה םתירוגלא - םיטנדוטס ץוביש עוציב"
                    style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
         </VBox>
     </top>
@@ -22,39 +30,39 @@
                 <Insets top="30" right="30" bottom="30" left="30"/>
             </padding>
 
-            <Label text="הגדרות שיבוץ"
+            <Label text="ץוביש תורדגה"
                    style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 
             <GridPane hgap="15" vgap="15" alignment="CENTER">
-                <Label text="שנת לימודים:" GridPane.columnIndex="1" GridPane.rowIndex="0"
+                <Label text=":םידומיל תנש" GridPane.columnIndex="1" GridPane.rowIndex="0"
                        style="-fx-font-size: 14px;"/>
                 <ComboBox fx:id="yearComboBox" GridPane.columnIndex="0" GridPane.rowIndex="0"
-                          prefWidth="200" promptText="בחר שנה"/>
+                          prefWidth="200" promptText="הנש רחב"/>
 
-                <Label text="סמסטר:" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                <Label text=":רטסמס" GridPane.columnIndex="1" GridPane.rowIndex="1"
                        style="-fx-font-size: 14px;"/>
                 <ComboBox fx:id="semesterComboBox" GridPane.columnIndex="0" GridPane.rowIndex="1"
-                          prefWidth="200" promptText="בחר סמסטר"/>
+                          prefWidth="200" promptText="רטסמס רחב"/>
             </GridPane>
 
             <VBox spacing="10" alignment="CENTER">
-                <Label text="התקדמות:" style="-fx-font-size: 14px;"/>
+                <Label text=":תומדקתה" style="-fx-font-size: 14px;"/>
                 <ProgressBar fx:id="progressBar" prefWidth="400" progress="0"/>
                 <Label fx:id="progressLabel" text="0%" style="-fx-font-size: 12px;"/>
             </VBox>
 
             <TextArea fx:id="logArea" prefHeight="250" editable="false"
-                      promptText="לוג פעולות יופיע כאן..."
+                      promptText="...ןאכ עיפוי תולועפ גול"
                       style="-fx-font-family: 'Consolas'; -fx-font-size: 12px;"/>
 
             <HBox spacing="15" alignment="CENTER">
-                <Button text="התחל שיבוץ" onAction="#startEnrollment"
+                <Button text="ץוביש לחתה" onAction="#startEnrollment"
                         prefWidth="150" prefHeight="40"
                         style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
-                <Button text="עצור" onAction="#stopEnrollment"
+                <Button text="רוצע" onAction="#stopEnrollment"
                         prefWidth="150" prefHeight="40"
                         style="-fx-background-color: #F44336; -fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;"/>
-                <Button text="נקה" onAction="#clearLog"
+                <Button text="הקנ" onAction="#clearLog"
                         prefWidth="150" prefHeight="40"
                         style="-fx-background-color: #757575; -fx-text-fill: white; -fx-font-size: 14px;"/>
             </HBox>
@@ -66,9 +74,9 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label fx:id="statusLabel" text="מוכן לשיבוץ"/>
+            <Label fx:id="statusLabel" text="ץובישל ןכומ"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="סגור" onAction="#closeWindow"
+            <Button text="רוגס" onAction="#closeWindow"
                     style="-fx-background-color: #757575; -fx-text-fill: white;"/>
         </HBox>
     </bottom>

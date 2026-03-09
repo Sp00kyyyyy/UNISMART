@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HybridEnrollmentService {
+    private static final String FULL_STATUS = "האלמ החלצה";
+    private static final String PARTIAL_STATUS = "יקלח ץוביש";
+
     private final GuidewayRepository repository = new GuidewayRepository();
 
     public EnrollmentRunReport runEnrollment(String academicYear, String semester) {
@@ -20,12 +23,11 @@ public class HybridEnrollmentService {
         List<Course> offeredCourses = repository.loadCourses(semester);
         Map<Integer, Course> coursesById = offeredCourses.stream()
                 .collect(Collectors.toMap(Course::getCourseID, course -> course));
-        Map<Integer, List<Integer>> prerequisitesByCourse = repository.loadPrerequisitesByCourse();
         List<CourseRequirement> requirements = repository.loadCourseRequirements();
 
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent = buildMandatoryCoursesByStudent(students, requirements, coursesById);
         Map<Integer, List<RequestChoice>> requestsByStudent = buildRequestsByStudent(
-                students, coursesById, mandatoryCoursesByStudent, prerequisitesByCourse, constraints);
+                students, coursesById, mandatoryCoursesByStudent, constraints);
 
         List<Student> orderedStudents = new ArrayList<>(students);
         orderedStudents.sort(studentComparator(mandatoryCoursesByStudent, requestsByStudent));
@@ -54,9 +56,9 @@ public class HybridEnrollmentService {
         int partialAssignments = 0;
         int unassignedStudents = 0;
         for (EnrollmentResult result : results) {
-            if ("הצלחה מלאה".equals(result.getStatus())) {
+            if (FULL_STATUS.equals(result.getStatus())) {
                 fullAssignments++;
-            } else if ("שיבוץ חלקי".equals(result.getStatus())) {
+            } else if (PARTIAL_STATUS.equals(result.getStatus())) {
                 partialAssignments++;
             } else {
                 unassignedStudents++;
@@ -107,7 +109,6 @@ public class HybridEnrollmentService {
             List<Student> students,
             Map<Integer, Course> coursesById,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
-            Map<Integer, List<Integer>> prerequisitesByCourse,
             Map<String, ConstraintRule> constraints
     ) {
         Map<Integer, List<RequestChoice>> requestsByStudent = new HashMap<>();
@@ -115,20 +116,15 @@ public class HybridEnrollmentService {
         for (Student student : students) {
             Map<Integer, Integer> rankedCourses = new LinkedHashMap<>();
             for (CoursePreference preference : student.getPreferences()) {
-                if (!coursesById.containsKey(preference.getCourseId())) {
-                    continue;
+                if (coursesById.containsKey(preference.getCourseId())) {
+                    rankedCourses.putIfAbsent(preference.getCourseId(), preference.getPreferenceRank());
                 }
-                if (student.hasCompletedCourse(preference.getCourseId())) {
-                    continue;
-                }
-                rankedCourses.putIfAbsent(preference.getCourseId(), preference.getPreferenceRank());
             }
 
             for (Integer mandatoryCourseId : mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of())) {
-                if (student.hasCompletedCourse(mandatoryCourseId) || !coursesById.containsKey(mandatoryCourseId)) {
-                    continue;
+                if (coursesById.containsKey(mandatoryCourseId)) {
+                    rankedCourses.putIfAbsent(mandatoryCourseId, rankedCourses.size() + 1);
                 }
-                rankedCourses.putIfAbsent(mandatoryCourseId, rankedCourses.size() + 1);
             }
 
             List<RequestChoice> requests = new ArrayList<>();
@@ -140,10 +136,6 @@ public class HybridEnrollmentService {
 
                 boolean mandatory = mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of())
                         .contains(course.getCourseID());
-                if (!student.hasAllPrerequisites(prerequisitesByCourse.getOrDefault(course.getCourseID(), List.of()))) {
-                    continue;
-                }
-
                 double score = scoreRequest(student, course, entry.getValue(), mandatory, constraints);
                 requests.add(new RequestChoice(course, entry.getValue(), mandatory, score));
             }

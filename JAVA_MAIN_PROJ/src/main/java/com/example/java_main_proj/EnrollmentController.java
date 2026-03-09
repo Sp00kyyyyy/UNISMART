@@ -27,16 +27,16 @@ public class EnrollmentController {
 
     private void setupComboBoxes() {
         yearComboBox.getItems().addAll("2025-2026", "2026-2027", "2027-2028");
-        semesterComboBox.getItems().addAll("סמסטר א'", "סמסטר ב'", "סמסטר קיץ");
+        semesterComboBox.getItems().addAll("'א רטסמס", "'ב רטסמס", "ץיק רטסמס");
 
         yearComboBox.setValue("2025-2026");
-        semesterComboBox.setValue("סמסטר א'");
+        semesterComboBox.setValue("'א רטסמס");
     }
 
     @FXML
     private void startEnrollment() {
         if (yearComboBox.getValue() == null || semesterComboBox.getValue() == null) {
-            showAlert("שגיאה", "יש לבחור שנת לימודים וסמסטר לפני ההרצה.");
+            showAlert("האיגש", ".הצרהה ינפל רטסמסו םידומיל תנש רוחבל שי");
             return;
         }
 
@@ -44,8 +44,8 @@ public class EnrollmentController {
         String semester = semesterComboBox.getValue();
         logArea.clear();
         progressBar.setProgress(-1);
-        progressLabel.setText("מריץ...");
-        statusLabel.setText("מריץ שיבוץ היברידי לפי ההנחיות...");
+        progressLabel.setText("...ץירמ");
+        statusLabel.setText("...תויחנהה יפל ידירביה ץוביש ץירמ");
 
         Task<EnrollmentRunReport> task = new Task<>() {
             @Override
@@ -61,15 +61,15 @@ public class EnrollmentController {
             for (String line : report.getLogLines()) {
                 logArea.appendText(line + System.lineSeparator());
             }
-            statusLabel.setText("השיבוץ הושלם עבור " + report.getSemester() + " (" + report.getAcademicYear() + ").");
+            statusLabel.setText(report.getSemester() + " (" + report.getAcademicYear() + ") רובע םלשוה ץובישה");
         });
 
         task.setOnFailed(event -> {
             progressBar.setProgress(0);
             progressLabel.setText("0%");
-            statusLabel.setText("השיבוץ נכשל.");
+            statusLabel.setText(".לשכנ ץובישה");
             Throwable error = task.getException();
-            logArea.appendText("שגיאה: " + (error == null ? "Unknown error" : error.getMessage()) + System.lineSeparator());
+            logArea.appendText(":האיגש " + (error == null ? "Unknown error" : error.getMessage()) + System.lineSeparator());
         });
 
         Thread worker = new Thread(task, "hybrid-enrollment-task");
@@ -79,10 +79,10 @@ public class EnrollmentController {
 
     @FXML
     private void stopEnrollment() {
-        logArea.appendText("העצירה הידנית זמינה למסך בלבד. להרצה חדשה בחרו נתונים והריצו שוב." + System.lineSeparator());
+        logArea.appendText(".בוש וצירהו םינותנ ורחב השדח הצרהל .דבלב ךסמל הנימז תינדיה הריצעה" + System.lineSeparator());
         progressBar.setProgress(0);
         progressLabel.setText("0%");
-        statusLabel.setText("המסך אופס.");
+        statusLabel.setText(".ספוא ךסמה");
     }
 
     @FXML
@@ -90,7 +90,7 @@ public class EnrollmentController {
         logArea.clear();
         progressBar.setProgress(0);
         progressLabel.setText("0%");
-        statusLabel.setText("מוכן להרצת שיבוץ.");
+        statusLabel.setText(".ץוביש תצרהל ןכומ");
     }
 
     @FXML

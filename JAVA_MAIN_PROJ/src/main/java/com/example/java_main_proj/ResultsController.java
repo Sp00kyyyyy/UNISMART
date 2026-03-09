@@ -15,6 +15,9 @@ import javafx.stage.Stage;
 import java.util.List;
 
 public class ResultsController {
+    private static final String FULL_STATUS = "האלמ החלצה";
+    private static final String PARTIAL_STATUS = "יקלח ץוביש";
+    private static final String EMPTY_STATUS = "ץוביש אלל";
 
     @FXML private ComboBox<String> yearFilterCombo;
     @FXML private ComboBox<String> semesterFilterCombo;
@@ -61,11 +64,11 @@ public class ResultsController {
                 }
 
                 setText(item);
-                if (item.equals("הצלחה מלאה")) {
+                if (item.equals(FULL_STATUS)) {
                     setStyle("-fx-text-fill: #388E3C; -fx-font-weight: bold;");
-                } else if (item.equals("שיבוץ חלקי")) {
+                } else if (item.equals(PARTIAL_STATUS)) {
                     setStyle("-fx-text-fill: #F57C00; -fx-font-weight: bold;");
-                } else if (item.equals("ללא שיבוץ")) {
+                } else if (item.equals(EMPTY_STATUS)) {
                     setStyle("-fx-text-fill: #C62828; -fx-font-weight: bold;");
                 } else {
                     setStyle("");
@@ -88,8 +91,8 @@ public class ResultsController {
     private void updateStatistics() {
         totalStudentsLabel.setText(String.valueOf(allResults.size()));
 
-        long success = allResults.stream().filter(result -> result.getStatus().equals("הצלחה מלאה")).count();
-        long partial = allResults.stream().filter(result -> result.getStatus().equals("שיבוץ חלקי")).count();
+        long success = allResults.stream().filter(result -> result.getStatus().equals(FULL_STATUS)).count();
+        long partial = allResults.stream().filter(result -> result.getStatus().equals(PARTIAL_STATUS)).count();
 
         successLabel.setText(String.valueOf(success));
         partialLabel.setText(String.valueOf(partial));
@@ -107,15 +110,15 @@ public class ResultsController {
         allResults.clear();
         resultsTable.setItems(allResults);
         updateStatistics();
-        statusLabel.setText("המסננים נוקו.");
+        statusLabel.setText(".וקונ םיננסמה");
     }
 
     @FXML
     private void exportResults() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("ייצוא תוצאות");
+        alert.setTitle("תואצות אוציי");
         alert.setHeaderText(null);
-        alert.setContentText("ייצוא לקובץ עדיין לא חובר.");
+        alert.setContentText(".רבוח אל ןיידע ץבוקל אוציי");
         alert.showAndWait();
     }
 
@@ -132,7 +135,7 @@ public class ResultsController {
             allResults.clear();
             resultsTable.setItems(allResults);
             updateStatistics();
-            statusLabel.setText("יש לבחור שנת לימודים וסמסטר להצגת תוצאות.");
+            statusLabel.setText(".תואצות תגצהל רטסמסו םידומיל תנש רוחבל שי");
             return;
         }
 
@@ -140,6 +143,6 @@ public class ResultsController {
         allResults.setAll(results);
         resultsTable.setItems(allResults);
         updateStatistics();
-        statusLabel.setText("הוצגו " + results.size() + " תוצאות עבור " + semester + " (" + academicYear + ").");
+        statusLabel.setText(results.size() + " (" + academicYear + ") " + semester + " רובע תואצות וגצוה");
     }
 }

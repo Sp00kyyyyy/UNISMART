@@ -12,7 +12,7 @@ public class Launcher extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("/com/example/java_main_proj/hello-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
-        stage.setTitle("UniSmart - מערכת שיבוץ סטודנטים");
+        stage.setTitle("UniSmart - םיטנדוטס ץוביש תכרעמ");
         stage.setScene(scene);
         stage.show();
     }
