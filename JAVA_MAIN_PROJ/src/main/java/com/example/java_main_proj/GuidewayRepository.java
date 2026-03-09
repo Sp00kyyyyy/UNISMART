@@ -199,17 +199,17 @@ public class GuidewayRepository {
             int enrolled = assigned.size();
             String status;
             if (requested > 0 && enrolled == requested) {
-                status = "האלמ החלצה";
+                status = "הצלחה מלאה";
             } else if (enrolled > 0) {
-                status = "יקלח ץוביש";
+                status = "שיבוץ חלקי";
             } else {
-                status = "ץוביש אלל";
+                status = "ללא שיבוץ";
             }
 
             results.add(new EnrollmentResult(
                     student.getIdNumber(),
                     student.getFullName(),
-                    student.getYear() + " הנש",
+                    student.getYear() + " שנה",
                     requested,
                     enrolled,
                     status,
@@ -267,8 +267,8 @@ public class GuidewayRepository {
         }
 
         if (values.isEmpty()) {
-            values.add("'א רטסמס");
-            values.add("'ב רטסמס");
+            values.add("סמסטר א'");
+            values.add("סמסטר ב'");
         }
 
         return new ArrayList<>(values);
@@ -356,9 +356,9 @@ public class GuidewayRepository {
 
     private int semesterRank(String semester) {
         return switch (semester) {
-            case "'א רטסמס" -> 1;
-            case "'ב רטסמס" -> 2;
-            case "ץיק רטסמס" -> 3;
+            case "סמסטר א'" -> 1;
+            case "סמסטר ב'" -> 2;
+            case "סמסטר קיץ" -> 3;
             default -> 99;
         };
     }

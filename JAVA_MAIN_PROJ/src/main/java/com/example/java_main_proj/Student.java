@@ -147,10 +147,10 @@ public class Student {
         }
 
         int startHour = course.getStartLocalTime().getHour();
-        if (timePreference.contains("רקוב")) {
+        if (timePreference.contains("בוקר")) {
             return startHour < 14;
         }
-        if (timePreference.contains("ברע")) {
+        if (timePreference.contains("ערב")) {
             return startHour >= 14;
         }
         return true;

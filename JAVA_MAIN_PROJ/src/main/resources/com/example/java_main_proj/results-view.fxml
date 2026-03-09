@@ -19,7 +19,7 @@
 
     <top>
         <VBox spacing="10" style="-fx-background-color: #9C27B0; -fx-padding: 15;">
-            <Label text="ץוביש תואצות תגצה"
+            <Label text="הצגת תוצאות שיבוץ"
                    style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
         </VBox>
     </top>
@@ -31,17 +31,17 @@
             </padding>
 
             <HBox spacing="15" alignment="CENTER">
-                <Label text=":יפל ןוניס" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                <Label text="סינון לפי:" style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
 
-                <Label text=":הנש"/>
-                <ComboBox fx:id="yearFilterCombo" prefWidth="150" promptText="םינשה לכ"/>
+                <Label text="שנה:"/>
+                <ComboBox fx:id="yearFilterCombo" prefWidth="150" promptText="כל השנים"/>
 
-                <Label text=":רטסמס"/>
-                <ComboBox fx:id="semesterFilterCombo" prefWidth="150" promptText="םירטסמסה לכ"/>
+                <Label text="סמסטר:"/>
+                <ComboBox fx:id="semesterFilterCombo" prefWidth="150" promptText="כל הסמסטרים"/>
 
-                <Button text="ןנס" onAction="#applyFilter"
+                <Button text="סנן" onAction="#applyFilter"
                         style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
-                <Button text="ןוניס הקנ" onAction="#clearFilter"
+                <Button text="נקה סינון" onAction="#clearFilter"
                         style="-fx-background-color: #757575; -fx-text-fill: white;"/>
             </HBox>
 
@@ -49,19 +49,19 @@
 
             <HBox spacing="30" alignment="CENTER">
                 <VBox alignment="CENTER" spacing="5" style="-fx-background-color: #E3F2FD; -fx-padding: 15; -fx-background-radius: 5;">
-                    <Label text="םיטנדוטס כ״הס" style="-fx-font-size: 12px;"/>
+                    <Label text="סה״כ סטודנטים" style="-fx-font-size: 12px;"/>
                     <Label fx:id="totalStudentsLabel" text="0"
                            style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1976D2;"/>
                 </VBox>
 
                 <VBox alignment="CENTER" spacing="5" style="-fx-background-color: #E8F5E9; -fx-padding: 15; -fx-background-radius: 5;">
-                    <Label text="האלמ החלצה" style="-fx-font-size: 12px;"/>
+                    <Label text="הצלחה מלאה" style="-fx-font-size: 12px;"/>
                     <Label fx:id="successLabel" text="0"
                            style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #388E3C;"/>
                 </VBox>
 
                 <VBox alignment="CENTER" spacing="5" style="-fx-background-color: #FFF3E0; -fx-padding: 15; -fx-background-radius: 5;">
-                    <Label text="יקלח ץוביש" style="-fx-font-size: 12px;"/>
+                    <Label text="שיבוץ חלקי" style="-fx-font-size: 12px;"/>
                     <Label fx:id="partialLabel" text="0"
                            style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #F57C00;"/>
                 </VBox>
@@ -69,17 +69,17 @@
 
             <Separator/>
 
-            <Label text=":תואצות טוריפ" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Label text="פירוט תוצאות:" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
             <TableView fx:id="resultsTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="studentIdCol" text="ז.ת" prefWidth="100"/>
-                    <TableColumn fx:id="studentNameCol" text="טנדוטסה םש" prefWidth="150"/>
-                    <TableColumn fx:id="yearCol" text="הנש" prefWidth="80"/>
-                    <TableColumn fx:id="requestedCol" text="םישקובמ םיסרוק" prefWidth="120"/>
-                    <TableColumn fx:id="enrolledCol" text="וצבוש םיסרוק" prefWidth="120"/>
-                    <TableColumn fx:id="statusCol" text="סוטטס" prefWidth="100"/>
-                    <TableColumn fx:id="coursesListCol" text="םיסרוק תמישר" prefWidth="200"/>
+                    <TableColumn fx:id="studentIdCol" text="ת.ז" prefWidth="100"/>
+                    <TableColumn fx:id="studentNameCol" text="שם הסטודנט" prefWidth="150"/>
+                    <TableColumn fx:id="yearCol" text="שנה" prefWidth="80"/>
+                    <TableColumn fx:id="requestedCol" text="קורסים מבוקשים" prefWidth="120"/>
+                    <TableColumn fx:id="enrolledCol" text="קורסים שובצו" prefWidth="120"/>
+                    <TableColumn fx:id="statusCol" text="סטטוס" prefWidth="100"/>
+                    <TableColumn fx:id="coursesListCol" text="רשימת קורסים" prefWidth="200"/>
                 </columns>
             </TableView>
         </VBox>
@@ -90,11 +90,11 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label fx:id="statusLabel" text="ןכומ"/>
+            <Label fx:id="statusLabel" text="מוכן"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button text="ץבוקל אציי" onAction="#exportResults"
+            <Button text="ייצא לקובץ" onAction="#exportResults"
                     style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
-            <Button text="רוגס" onAction="#closeWindow"
+            <Button text="סגור" onAction="#closeWindow"
                     style="-fx-background-color: #757575; -fx-text-fill: white;"/>
         </HBox>
     </bottom>

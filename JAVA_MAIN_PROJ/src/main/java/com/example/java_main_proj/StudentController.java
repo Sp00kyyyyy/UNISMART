@@ -63,9 +63,9 @@ public class StudentController {
             List<Student> students = repository.loadStudents();
             studentsList.addAll(students);
             studentsTable.setItems(studentsList);
-            statusLabel.setText(students.size() + " .םיטנדוטס ונעטנ");
+            statusLabel.setText("נטענו " + students.size() + " סטודנטים.");
         } catch (Exception exception) {
-            statusLabel.setText(" :םיטנדוטסה ינותנ תניעטב האיגש" + exception.getMessage());
+            statusLabel.setText("שגיאה בטעינת נתוני הסטודנטים: " + exception.getMessage());
             exception.printStackTrace();
         }
     }
@@ -75,7 +75,7 @@ public class StudentController {
         String searchTerm = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
         if (searchTerm.isBlank()) {
             studentsTable.setItems(studentsList);
-            statusLabel.setText(".םיטנדוטסה לכ וגצוה");
+            statusLabel.setText("הוצגו כל הסטודנטים.");
             return;
         }
 
@@ -86,38 +86,38 @@ public class StudentController {
                         .collect(Collectors.toList())
         );
         studentsTable.setItems(filtered);
-        statusLabel.setText(filtered.size() + " .םיטנדוטס ואצמנ");
+        statusLabel.setText("נמצאו " + filtered.size() + " סטודנטים.");
     }
 
     @FXML
     private void addStudent() {
-        showAlert("טנדוטס תפסוה", ".םינותנה דסמל רבוח אל ןיידע הכירעה ךסמ");
+        showAlert("הוספת סטודנט", "מסך העריכה עדיין לא חובר למסד הנתונים.");
     }
 
     @FXML
     private void editStudent() {
         Student selected = studentsTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("האיגש", ".הכירעל טנדוטס רוחבל שי");
+            showAlert("שגיאה", "יש לבחור סטודנט לעריכה.");
             return;
         }
-        showAlert("טנדוטס תכירע", ".םינותנה דסמל רבוח אל ןיידע הכירעה ךסמ");
+        showAlert("עריכת סטודנט", "מסך העריכה עדיין לא חובר למסד הנתונים.");
     }
 
     @FXML
     private void deleteStudent() {
         Student selected = studentsTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            showAlert("האיגש", ".הקיחמל טנדוטס רוחבל שי");
+            showAlert("שגיאה", "יש לבחור סטודנט למחיקה.");
             return;
         }
-        showAlert("טנדוטס תקיחמ", ".תלעפומ אל ןיידע הרישי הקיחמ");
+        showAlert("מחיקת סטודנט", "מחיקה ישירה עדיין לא מופעלת.");
     }
 
     @FXML
     private void refreshTable() {
         loadStudents();
-        statusLabel.setText(".הננעור םיטנדוטסה תמישר");
+        statusLabel.setText("רשימת הסטודנטים רועננה.");
     }
 
     @FXML

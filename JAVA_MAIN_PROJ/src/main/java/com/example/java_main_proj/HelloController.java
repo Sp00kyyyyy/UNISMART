@@ -20,10 +20,10 @@ public class HelloController {
 
     private void checkDatabaseConnection() {
         if (DatabaseConnection.testConnection()) {
-            statusLabel.setText("םינותנה דסמל רבוחמ :בצמ");
+            statusLabel.setText("מצב: מחובר למסד הנתונים");
             statusLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px;");
         } else {
-            statusLabel.setText("םינותנה דסמל רוביחב האיגש :בצמ");
+            statusLabel.setText("מצב: שגיאה בחיבור למסד הנתונים");
             statusLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
         }
     }
@@ -35,11 +35,11 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("םיטנדוטס לוהינ");
+            stage.setTitle("ניהול סטודנטים");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception exception) {
-            showAlert("האיגש", " :םיטנדוטסה לוהינ ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            showAlert("שגיאה", "לא ניתן לפתוח את חלון ניהול הסטודנטים: " + exception.getMessage());
             exception.printStackTrace();
         }
     }
@@ -51,11 +51,11 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("םיסרוק לוהינ");
+            stage.setTitle("ניהול קורסים");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception exception) {
-            showAlert("האיגש", " :םיסרוקה לוהינ ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            showAlert("שגיאה", "לא ניתן לפתוח את חלון ניהול הקורסים: " + exception.getMessage());
             exception.printStackTrace();
         }
     }
@@ -67,11 +67,11 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("ץוביש עוציב");
+            stage.setTitle("ביצוע שיבוץ");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception exception) {
-            showAlert("האיגש", " :ץובישה עוציב ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            showAlert("שגיאה", "לא ניתן לפתוח את חלון ביצוע השיבוץ: " + exception.getMessage());
             exception.printStackTrace();
         }
     }
@@ -83,21 +83,21 @@ public class HelloController {
             Parent root = loader.load();
 
             Stage stage = new Stage();
-            stage.setTitle("תואצות תגצה");
+            stage.setTitle("הצגת תוצאות");
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception exception) {
-            showAlert("האיגש", " :תואצותה ןולח תא חותפל ןתינ אל" + exception.getMessage());
+            showAlert("שגיאה", "לא ניתן לפתוח את חלון התוצאות: " + exception.getMessage());
             exception.printStackTrace();
         }
     }
 
     @FXML
     private void showAbout() {
-        showAlert("תכרעמה תודוא",
-                "UniSmart - םיטנדוטס ץוביש תכרעמ\n" +
-                        "ילאפר ןתנוהי :ידי לע חתופ\n" +
-                        "0.1 :הסרג");
+        showAlert("אודות המערכת",
+                "UniSmart - מערכת שיבוץ סטודנטים\n" +
+                        "פותח על ידי: יהונתן רפאלי\n" +
+                        "גרסה: 1.0");
     }
 
     @FXML

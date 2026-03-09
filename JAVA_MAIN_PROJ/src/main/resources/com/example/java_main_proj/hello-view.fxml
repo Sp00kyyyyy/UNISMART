@@ -17,16 +17,16 @@
 
     <top>
         <MenuBar>
-            <Menu text="םיצבק">
-                <MenuItem text="האיצי" onAction="#handleExit"/>
+            <Menu text="קבצים">
+                <MenuItem text="יציאה" onAction="#handleExit"/>
             </Menu>
-            <Menu text="לוהינ">
-                <MenuItem text="םיטנדוטס" onAction="#showStudents"/>
-                <MenuItem text="םיסרוק" onAction="#showCourses"/>
-                <MenuItem text="ץוביש" onAction="#showEnrollment"/>
+            <Menu text="ניהול">
+                <MenuItem text="סטודנטים" onAction="#showStudents"/>
+                <MenuItem text="קורסים" onAction="#showCourses"/>
+                <MenuItem text="שיבוץ" onAction="#showEnrollment"/>
             </Menu>
-            <Menu text="הרזע">
-                <MenuItem text="תודוא" onAction="#showAbout"/>
+            <Menu text="עזרה">
+                <MenuItem text="אודות" onAction="#showAbout"/>
             </Menu>
         </MenuBar>
     </top>
@@ -37,26 +37,26 @@
                 <Insets top="50" right="50" bottom="50" left="50"/>
             </padding>
 
-            <Label text="UniSmart - םיטנדוטס ץוביש תכרעמ"
+            <Label text="UniSmart - מערכת שיבוץ סטודנטים"
                    style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-            <Button text="םיטנדוטס לוהינ" onAction="#showStudents"
+            <Button text="ניהול סטודנטים" onAction="#showStudents"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="םיסרוק לוהינ" onAction="#showCourses"
+            <Button text="ניהול קורסים" onAction="#showCourses"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="ץוביש עוציב" onAction="#showEnrollment"
+            <Button text="ביצוע שיבוץ" onAction="#showEnrollment"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Button text="תואצות תגצה" onAction="#showResults"
+            <Button text="הצגת תוצאות" onAction="#showResults"
                     prefWidth="200" prefHeight="50"
                     style="-fx-font-size: 14px;"/>
 
-            <Label fx:id="statusLabel" text="םינותנה דסמל רבוחמ :בצמ"
+            <Label fx:id="statusLabel" text="מצב: מחובר למסד הנתונים"
                    style="-fx-text-fill: green; -fx-font-size: 14px;"/>
         </VBox>
     </center>
@@ -66,7 +66,7 @@
             <padding>
                 <Insets top="10" right="10" bottom="10" left="10"/>
             </padding>
-            <Label text="UniSmart © 2025 - ילאפר ןתנוהי"/>
+            <Label text="UniSmart © 2025 - יהונתן רפאלי"/>
         </HBox>
     </bottom>
 </BorderPane>

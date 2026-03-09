@@ -15,9 +15,9 @@ import javafx.stage.Stage;
 import java.util.List;
 
 public class ResultsController {
-    private static final String FULL_STATUS = "האלמ החלצה";
-    private static final String PARTIAL_STATUS = "יקלח ץוביש";
-    private static final String EMPTY_STATUS = "ץוביש אלל";
+    private static final String FULL_STATUS = "הצלחה מלאה";
+    private static final String PARTIAL_STATUS = "שיבוץ חלקי";
+    private static final String EMPTY_STATUS = "ללא שיבוץ";
 
     @FXML private ComboBox<String> yearFilterCombo;
     @FXML private ComboBox<String> semesterFilterCombo;
@@ -110,15 +110,15 @@ public class ResultsController {
         allResults.clear();
         resultsTable.setItems(allResults);
         updateStatistics();
-        statusLabel.setText(".וקונ םיננסמה");
+        statusLabel.setText("המסננים נוקו.");
     }
 
     @FXML
     private void exportResults() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("תואצות אוציי");
+        alert.setTitle("ייצוא תוצאות");
         alert.setHeaderText(null);
-        alert.setContentText(".רבוח אל ןיידע ץבוקל אוציי");
+        alert.setContentText("ייצוא לקובץ עדיין לא חובר.");
         alert.showAndWait();
     }
 
@@ -135,7 +135,7 @@ public class ResultsController {
             allResults.clear();
             resultsTable.setItems(allResults);
             updateStatistics();
-            statusLabel.setText(".תואצות תגצהל רטסמסו םידומיל תנש רוחבל שי");
+            statusLabel.setText("יש לבחור שנת לימודים וסמסטר להצגת תוצאות.");
             return;
         }
 
@@ -143,6 +143,6 @@ public class ResultsController {
         allResults.setAll(results);
         resultsTable.setItems(allResults);
         updateStatistics();
-        statusLabel.setText(results.size() + " (" + academicYear + ") " + semester + " רובע תואצות וגצוה");
+        statusLabel.setText("הוצגו " + results.size() + " תוצאות עבור " + semester + " (" + academicYear + ").");
     }
 }

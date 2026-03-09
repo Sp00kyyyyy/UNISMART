@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class HybridEnrollmentService {
-    private static final String FULL_STATUS = "האלמ החלצה";
-    private static final String PARTIAL_STATUS = "יקלח ץוביש";
+    private static final String FULL_STATUS = "הצלחה מלאה";
+    private static final String PARTIAL_STATUS = "שיבוץ חלקי";
 
     private final GuidewayRepository repository = new GuidewayRepository();
 

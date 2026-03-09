@@ -78,17 +78,17 @@ public final class DatabaseBootstrap {
 
     private static void normalizeStudentData(Connection connection) throws SQLException {
         List<StudentDisplaySeed> seeds = List.of(
-                new StudentDisplaySeed(1, "ילאפר ןתנוהי", "בשחמה יעדמ", "רקוב", "יעיבר,ישילש,ןושאר"),
-                new StudentDisplaySeed(2, "ןהכ הרש", "בשחמה יעדמ", "ברע", "ישימח,יעיבר,ינש"),
-                new StudentDisplaySeed(3, "יול דוד", "הנכות תסדנה", "רקוב", "ישילש,ינש,ןושאר"),
-                new StudentDisplaySeed(4, "םהרבא לכימ", "עדימ תוכרעמ", "רקוב", "יעיבר,ישילש,ינש"),
-                new StudentDisplaySeed(5, "יחרזמ יסוי", "בשחמה יעדמ", "ברע", "ישימח,יעיבר,ןושאר"),
-                new StudentDisplaySeed(6, "ילארשי תינור", "הנכות תסדנה", "רקוב", "ישימח,ישילש,ינש"),
-                new StudentDisplaySeed(7, "ןועמש יבא", "בשחמה יעדמ", "ברע", "ישימח,ינש,ןושאר"),
-                new StudentDisplaySeed(8, "דוד העונ", "עדימ תוכרעמ", "רקוב", "יעיבר,ישילש,ןושאר"),
-                new StudentDisplaySeed(9, "רומ ילא", "הנכות תסדנה", "ברע", "ישימח,יעיבר,ינש"),
-                new StudentDisplaySeed(10, "יול רמת", "בשחמה יעדמ", "רקוב", "ישימח,ישילש,ןושאר"),
-                new StudentDisplaySeed(11, "יטרופנוק קפוא", "בשחמה יעדמ", "ברע", "ישימח,ישילש,ןושאר")
+                new StudentDisplaySeed(1, "יהונתן רפאלי", "מדעי המחשב", "בוקר", "ראשון,שלישי,רביעי"),
+                new StudentDisplaySeed(2, "שרה כהן", "מדעי המחשב", "ערב", "שני,רביעי,חמישי"),
+                new StudentDisplaySeed(3, "דוד לוי", "הנדסת תוכנה", "בוקר", "ראשון,שני,שלישי"),
+                new StudentDisplaySeed(4, "מיכל אברהם", "מערכות מידע", "בוקר", "שני,שלישי,רביעי"),
+                new StudentDisplaySeed(5, "יוסי מזרחי", "מדעי המחשב", "ערב", "ראשון,רביעי,חמישי"),
+                new StudentDisplaySeed(6, "רונית ישראלי", "הנדסת תוכנה", "בוקר", "שני,שלישי,חמישי"),
+                new StudentDisplaySeed(7, "אבי שמעון", "מדעי המחשב", "ערב", "ראשון,שני,חמישי"),
+                new StudentDisplaySeed(8, "נועה דוד", "מערכות מידע", "בוקר", "ראשון,שלישי,רביעי"),
+                new StudentDisplaySeed(9, "אלי מור", "הנדסת תוכנה", "ערב", "שני,רביעי,חמישי"),
+                new StudentDisplaySeed(10, "תמר לוי", "מדעי המחשב", "בוקר", "ראשון,שלישי,חמישי"),
+                new StudentDisplaySeed(11, "אופק קונפורטי", "מדעי המחשב", "ערב", "ראשון,שלישי,חמישי")
         );
 
         try (PreparedStatement statement = connection.prepareStatement(
@@ -107,16 +107,16 @@ public final class DatabaseBootstrap {
 
     private static void normalizeCourseData(Connection connection) throws SQLException {
         List<CourseDisplaySeed> seeds = List.of(
-                new CourseDisplaySeed(1, "בשחמה יעדמל אובמ", "הבוח", "ןהכ יכדרמ פורפ", "ןושאר", "'א רטסמס"),
-                new CourseDisplaySeed(2, "םימתירוגלאו םינותנ ינבמ", "הבוח", "יול לחר רד", "ינש", "'ב רטסמס"),
-                new CourseDisplaySeed(3, "םימצע החנומ תונכת", "הבוח", "דוד םהרבא פורפ", "ישילש", "'א רטסמס"),
-                new CourseDisplaySeed(5, "תיתוכאלמ הניב", "הריחב", "ילארשי הרש רד", "יעיבר", "'ב רטסמס"),
-                new CourseDisplaySeed(6, "עדימ תוכרעמ", "הבוח", "יחרזמ ףסוי פורפ", "ןושאר", "'א רטסמס"),
-                new CourseDisplaySeed(7, "הנכות תסדנה", "הבוח", "םהרבא העונ רד", "ישילש", "'ב רטסמס"),
-                new CourseDisplaySeed(8, "הנוכמ תדימל", "הריחב", "ןועמש דוד פורפ", "ישימח", "'ב רטסמס"),
-                new CourseDisplaySeed(9, "םינותנ ידסמ", "הבוח", "ןהכ לכימ רד", "ינש", "'א רטסמס"),
-                new CourseDisplaySeed(10, "עדימ תחטבא", "הריחב", "קרב השמ פורפ", "יעיבר", "'ב רטסמס"),
-                new CourseDisplaySeed(11, "םיבשחמ תותשר", "הבוח", "ץכ לעי רד", "ישימח", "'א רטסמס")
+                new CourseDisplaySeed(1, "מבוא למדעי המחשב", "חובה", "פרופ מרדכי כהן", "ראשון", "סמסטר א'"),
+                new CourseDisplaySeed(2, "מבני נתונים ואלגוריתמים", "חובה", "דר רחל לוי", "שני", "סמסטר ב'"),
+                new CourseDisplaySeed(3, "תכנות מונחה עצמים", "חובה", "פרופ אברהם דוד", "שלישי", "סמסטר א'"),
+                new CourseDisplaySeed(5, "בינה מלאכותית", "בחירה", "דר שרה ישראלי", "רביעי", "סמסטר ב'"),
+                new CourseDisplaySeed(6, "מערכות מידע", "חובה", "פרופ יוסף מזרחי", "ראשון", "סמסטר א'"),
+                new CourseDisplaySeed(7, "הנדסת תוכנה", "חובה", "דר נועה אברהם", "שלישי", "סמסטר ב'"),
+                new CourseDisplaySeed(8, "למידת מכונה", "בחירה", "פרופ דוד שמעון", "חמישי", "סמסטר ב'"),
+                new CourseDisplaySeed(9, "מסדי נתונים", "חובה", "דר מיכל כהן", "שני", "סמסטר א'"),
+                new CourseDisplaySeed(10, "אבטחת מידע", "בחירה", "פרופ משה ברק", "רביעי", "סמסטר ב'"),
+                new CourseDisplaySeed(11, "רשתות מחשבים", "חובה", "דר יעל כץ", "חמישי", "סמסטר א'")
         );
 
         try (PreparedStatement statement = connection.prepareStatement(
@@ -136,16 +136,16 @@ public final class DatabaseBootstrap {
 
     private static void normalizeEnrollmentSemesters(Connection connection) throws SQLException {
         List<SemesterSeed> seeds = List.of(
-                new SemesterSeed("\u05e1\u05de\u05e1\u05d8\u05e8 \u05d0'", "'א רטסמס"),
-                new SemesterSeed("\u05e1\u05de\u05e1\u05d8\u05e8 \u05d1'", "'ב רטסמס"),
-                new SemesterSeed("\u05e1\u05de\u05e1\u05d8\u05e8 \u05e7\u05d9\u05e5", "ץיק רטסמס")
+                new SemesterSeed(reverse("סמסטר א'"), "סמסטר א'"),
+                new SemesterSeed(reverse("סמסטר ב'"), "סמסטר ב'"),
+                new SemesterSeed(reverse("סמסטר קיץ"), "סמסטר קיץ")
         );
 
         try (PreparedStatement statement = connection.prepareStatement(
                 "UPDATE Enrollment SET Semester=? WHERE Semester=?")) {
             for (SemesterSeed seed : seeds) {
-                statement.setString(1, seed.reversedValue());
-                statement.setString(2, seed.normalValue());
+                statement.setString(1, seed.normalValue());
+                statement.setString(2, seed.previousValue());
                 statement.addBatch();
             }
             statement.executeBatch();
@@ -183,26 +183,26 @@ public final class DatabaseBootstrap {
 
     private static void seedCourseTrackRules(Connection connection) throws SQLException {
         List<CourseTrackRuleSeed> seeds = List.of(
-                new CourseTrackRuleSeed(1, 1, "בשחמה יעדמ", 1, true),
-                new CourseTrackRuleSeed(2, 3, "בשחמה יעדמ", 2, true),
-                new CourseTrackRuleSeed(3, 9, "בשחמה יעדמ", 2, true),
-                new CourseTrackRuleSeed(4, 2, "בשחמה יעדמ", 3, true),
-                new CourseTrackRuleSeed(5, 11, "בשחמה יעדמ", 3, true),
-                new CourseTrackRuleSeed(6, 1, "הנכות תסדנה", 1, true),
-                new CourseTrackRuleSeed(7, 3, "הנכות תסדנה", 1, true),
-                new CourseTrackRuleSeed(8, 6, "הנכות תסדנה", 2, true),
-                new CourseTrackRuleSeed(9, 9, "הנכות תסדנה", 2, true),
-                new CourseTrackRuleSeed(10, 2, "הנכות תסדנה", 3, true),
-                new CourseTrackRuleSeed(11, 7, "הנכות תסדנה", 3, true),
-                new CourseTrackRuleSeed(12, 11, "הנכות תסדנה", 4, true),
-                new CourseTrackRuleSeed(13, 1, "עדימ תוכרעמ", 1, true),
-                new CourseTrackRuleSeed(14, 6, "עדימ תוכרעמ", 1, true),
-                new CourseTrackRuleSeed(15, 9, "עדימ תוכרעמ", 2, true),
-                new CourseTrackRuleSeed(16, 2, "עדימ תוכרעמ", 3, true),
-                new CourseTrackRuleSeed(17, 10, "עדימ תוכרעמ", 3, false),
-                new CourseTrackRuleSeed(18, 5, "בשחמה יעדמ", 4, false),
-                new CourseTrackRuleSeed(19, 8, "בשחמה יעדמ", 4, false),
-                new CourseTrackRuleSeed(20, 10, "הנכות תסדנה", 4, false)
+                new CourseTrackRuleSeed(1, 1, "מדעי המחשב", 1, true),
+                new CourseTrackRuleSeed(2, 3, "מדעי המחשב", 2, true),
+                new CourseTrackRuleSeed(3, 9, "מדעי המחשב", 2, true),
+                new CourseTrackRuleSeed(4, 2, "מדעי המחשב", 3, true),
+                new CourseTrackRuleSeed(5, 11, "מדעי המחשב", 3, true),
+                new CourseTrackRuleSeed(6, 1, "הנדסת תוכנה", 1, true),
+                new CourseTrackRuleSeed(7, 3, "הנדסת תוכנה", 1, true),
+                new CourseTrackRuleSeed(8, 6, "הנדסת תוכנה", 2, true),
+                new CourseTrackRuleSeed(9, 9, "הנדסת תוכנה", 2, true),
+                new CourseTrackRuleSeed(10, 2, "הנדסת תוכנה", 3, true),
+                new CourseTrackRuleSeed(11, 7, "הנדסת תוכנה", 3, true),
+                new CourseTrackRuleSeed(12, 11, "הנדסת תוכנה", 4, true),
+                new CourseTrackRuleSeed(13, 1, "מערכות מידע", 1, true),
+                new CourseTrackRuleSeed(14, 6, "מערכות מידע", 1, true),
+                new CourseTrackRuleSeed(15, 9, "מערכות מידע", 2, true),
+                new CourseTrackRuleSeed(16, 2, "מערכות מידע", 3, true),
+                new CourseTrackRuleSeed(17, 10, "מערכות מידע", 3, false),
+                new CourseTrackRuleSeed(18, 5, "מדעי המחשב", 4, false),
+                new CourseTrackRuleSeed(19, 8, "מדעי המחשב", 4, false),
+                new CourseTrackRuleSeed(20, 10, "הנדסת תוכנה", 4, false)
         );
 
         try (Statement deleteStatement = connection.createStatement()) {
@@ -286,9 +286,9 @@ public final class DatabaseBootstrap {
             score += 20;
         }
 
-        if ("רקוב".equals(student.timePreference()) && course.startHour() < 14) {
+        if ("בוקר".equals(student.timePreference()) && course.startHour() < 14) {
             score += 12;
-        } else if ("ברע".equals(student.timePreference()) && course.startHour() >= 14) {
+        } else if ("ערב".equals(student.timePreference()) && course.startHour() >= 14) {
             score += 12;
         }
 
@@ -296,11 +296,11 @@ public final class DatabaseBootstrap {
             score += 16;
         }
 
-        if ("הבוח".equals(course.courseType())) {
+        if ("חובה".equals(course.courseType())) {
             score += 8;
         }
 
-        if ("'א רטסמס".equals(course.semester()) && student.year() <= 2) {
+        if ("סמסטר א'".equals(course.semester()) && student.year() <= 2) {
             score += 3;
         }
 
@@ -309,9 +309,9 @@ public final class DatabaseBootstrap {
 
     private static Set<Integer> trackRelevantCourseIds(String track) {
         return switch (track) {
-            case "בשחמה יעדמ" -> Set.of(2, 5, 8, 10, 11);
-            case "הנכות תסדנה" -> Set.of(2, 7, 8, 10, 11);
-            case "עדימ תוכרעמ" -> Set.of(5, 6, 9, 10);
+            case "מדעי המחשב" -> Set.of(2, 5, 8, 10, 11);
+            case "הנדסת תוכנה" -> Set.of(2, 7, 8, 10, 11);
+            case "מערכות מידע" -> Set.of(5, 6, 9, 10);
             default -> Set.of();
         };
     }
@@ -382,6 +382,10 @@ public final class DatabaseBootstrap {
         return days;
     }
 
+    private static String reverse(String value) {
+        return new StringBuilder(value).reverse().toString();
+    }
+
     private static void dropTableIfExists(Connection connection, String tableName) throws SQLException {
         if (!tableExists(connection, tableName)) {
             return;
@@ -433,7 +437,7 @@ public final class DatabaseBootstrap {
     private record ConstraintSeed(int id, String name, String description, String type, int weight) {
     }
 
-    private record SemesterSeed(String normalValue, String reversedValue) {
+    private record SemesterSeed(String previousValue, String normalValue) {
     }
 
     private record StudentDisplaySeed(
