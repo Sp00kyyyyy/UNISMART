@@ -28,6 +28,7 @@ public class HybridEnrollmentService {
     public EnrollmentRunReport runEnrollment(String academicYear, String semester) {
         List<String> logLines = new ArrayList<>();
         Map<String, ConstraintRule> constraints = repository.loadConstraints();
+        WeightProfile weights = WeightProfile.from(constraints);
         List<Student> students = repository.loadStudents();
         List<Course> offeredCourses = repository.loadCourses(semester);
         Map<Integer, Course> coursesById = offeredCourses.stream()
@@ -35,17 +36,17 @@ public class HybridEnrollmentService {
         List<CourseRequirement> requirements = repository.loadCourseRequirements();
 
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent = buildMandatoryCoursesByStudent(students, requirements, coursesById);
-        Map<Integer, List<RequestChoice>> requestsByStudent = buildRequestsByStudent(
-                students, coursesById, mandatoryCoursesByStudent, constraints);
+        Map<Integer, StudentRequests> requestsByStudent = buildRequestsByStudent(
+                students, coursesById, mandatoryCoursesByStudent, weights);
         int activeStudents = (int) requestsByStudent.values().stream()
-                .filter(requests -> !requests.isEmpty())
+                .filter(studentRequests -> !studentRequests.requests().isEmpty())
                 .count();
 
         List<Student> orderedStudents = new ArrayList<>(students);
         orderedStudents.sort(studentComparator(mandatoryCoursesByStudent, requestsByStudent));
 
         AssignmentState state = new AssignmentState(offeredCourses);
-        int requestedCourses = requestsByStudent.values().stream().mapToInt(List::size).sum();
+        int requestedCourses = requestsByStudent.values().stream().mapToInt(StudentRequests::size).sum();
 
         logLines.add("Guideway sync complete.");
         logLines.add("Loaded " + students.size() + " students.");
@@ -53,11 +54,11 @@ public class HybridEnrollmentService {
         logLines.add("Processing " + requestedCourses + " ranked requests.");
 
         for (Student student : orderedStudents) {
-            assignGreedy(student, requestsByStudent.getOrDefault(student.getStudentID(), List.of()), state, constraints);
+            assignGreedy(student, requestsByStudent.getOrDefault(student.getStudentID(), StudentRequests.EMPTY).requests(), state);
         }
 
         int initialAssignments = state.totalAssignments();
-        int improvements = runLocalImprovement(orderedStudents, requestsByStudent, state, constraints);
+        int improvements = runLocalImprovement(orderedStudents, requestsByStudent, state);
         int finalAssignments = state.totalAssignments();
 
         List<EnrollmentDecision> decisions = state.toDecisions(academicYear, semester);
@@ -101,62 +102,74 @@ public class HybridEnrollmentService {
             List<CourseRequirement> requirements,
             Map<Integer, Course> coursesById
     ) {
+        Map<TrackYearKey, Set<Integer>> mandatoryCoursesByTrackYear = requirements.stream()
+                .filter(CourseRequirement::isMandatory)
+                .filter(requirement -> coursesById.containsKey(requirement.getCourseId()))
+                .collect(Collectors.groupingBy(
+                        requirement -> new TrackYearKey(requirement.getTrack(), requirement.getYear()),
+                        Collectors.mapping(CourseRequirement::getCourseId, Collectors.toSet())
+                ));
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent = new HashMap<>();
 
         for (Student student : students) {
-            Set<Integer> mandatoryCourses = requirements.stream()
-                    .filter(CourseRequirement::isMandatory)
-                    .filter(requirement -> requirement.getTrack().equals(student.getTrack()))
-                    .filter(requirement -> requirement.getYear() == student.getYear())
-                    .map(CourseRequirement::getCourseId)
-                    .filter(coursesById::containsKey)
-                    .collect(Collectors.toSet());
+            Set<Integer> mandatoryCourses = mandatoryCoursesByTrackYear.getOrDefault(
+                    new TrackYearKey(student.getTrack(), student.getYear()),
+                    Set.of());
             mandatoryCoursesByStudent.put(student.getStudentID(), mandatoryCourses);
         }
 
         return mandatoryCoursesByStudent;
     }
 
-    private Map<Integer, List<RequestChoice>> buildRequestsByStudent(
+    private Map<Integer, StudentRequests> buildRequestsByStudent(
             List<Student> students,
             Map<Integer, Course> coursesById,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
-            Map<String, ConstraintRule> constraints
+            WeightProfile weights
     ) {
-        Map<Integer, List<RequestChoice>> requestsByStudent = new HashMap<>();
+        Map<Integer, StudentRequests> requestsByStudent = new HashMap<>();
 
         for (Student student : students) {
             Map<Integer, Integer> rankedCourses = new LinkedHashMap<>();
+            Set<Integer> mandatoryCourses = mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of());
             for (CoursePreference preference : student.getPreferences()) {
                 if (coursesById.containsKey(preference.getCourseId())) {
                     rankedCourses.putIfAbsent(preference.getCourseId(), preference.getPreferenceRank());
                 }
             }
 
-            for (Integer mandatoryCourseId : mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of())) {
+            for (Integer mandatoryCourseId : mandatoryCourses) {
                 if (coursesById.containsKey(mandatoryCourseId)) {
                     rankedCourses.putIfAbsent(mandatoryCourseId, rankedCourses.size() + 1);
                 }
             }
 
             List<RequestChoice> requests = new ArrayList<>();
+            int mandatoryRequestCount = 0;
             for (Map.Entry<Integer, Integer> entry : rankedCourses.entrySet()) {
                 Course course = coursesById.get(entry.getKey());
                 if (course == null) {
                     continue;
                 }
 
-                boolean mandatory = mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of())
-                        .contains(course.getCourseID());
-                double score = scoreRequest(student, course, entry.getValue(), mandatory, constraints);
-                requests.add(new RequestChoice(course, entry.getValue(), mandatory, score));
+                boolean mandatory = mandatoryCourses.contains(course.getCourseID());
+                if (mandatory) {
+                    mandatoryRequestCount++;
+                }
+                requests.add(new RequestChoice(
+                        course,
+                        entry.getValue(),
+                        mandatory,
+                        scoreRequest(student, course, entry.getValue(), mandatory, weights),
+                        accessPriority(student, mandatory)
+                ));
             }
 
             requests.sort(Comparator
                     .comparing(RequestChoice::mandatory).reversed()
                     .thenComparingInt(RequestChoice::rank)
                     .thenComparing(Comparator.comparingDouble(RequestChoice::score).reversed()));
-            requestsByStudent.put(student.getStudentID(), requests);
+            requestsByStudent.put(student.getStudentID(), new StudentRequests(List.copyOf(requests), mandatoryRequestCount));
         }
 
         return requestsByStudent;
@@ -164,7 +177,7 @@ public class HybridEnrollmentService {
 
     private Comparator<Student> studentComparator(
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
-            Map<Integer, List<RequestChoice>> requestsByStudent
+            Map<Integer, StudentRequests> requestsByStudent
     ) {
         return Comparator
                 .comparingInt((Student student) -> pendingMandatoryCount(student, mandatoryCoursesByStudent, requestsByStudent))
@@ -178,35 +191,34 @@ public class HybridEnrollmentService {
     private int pendingMandatoryCount(
             Student student,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
-            Map<Integer, List<RequestChoice>> requestsByStudent
+            Map<Integer, StudentRequests> requestsByStudent
     ) {
         Set<Integer> mandatory = mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of());
-        return (int) requestsByStudent.getOrDefault(student.getStudentID(), List.of()).stream()
-                .filter(request -> mandatory.contains(request.course().getCourseID()))
-                .count();
+        if (mandatory.isEmpty()) {
+            return 0;
+        }
+        return requestsByStudent.getOrDefault(student.getStudentID(), StudentRequests.EMPTY).mandatoryRequestCount();
     }
 
     private void assignGreedy(
             Student student,
             List<RequestChoice> requests,
-            AssignmentState state,
-            Map<String, ConstraintRule> constraints
+            AssignmentState state
     ) {
         for (RequestChoice request : requests) {
             if (state.isAssigned(student.getStudentID(), request.course().getCourseID())) {
                 continue;
             }
             if (isFeasible(student, request, state)) {
-                state.assign(student, request, scoreRequest(student, request.course(), request.rank(), request.mandatory(), constraints));
+                state.assign(student, request);
             }
         }
     }
 
     private int runLocalImprovement(
             List<Student> students,
-            Map<Integer, List<RequestChoice>> requestsByStudent,
-            AssignmentState state,
-            Map<String, ConstraintRule> constraints
+            Map<Integer, StudentRequests> requestsByStudent,
+            AssignmentState state
     ) {
         int improvements = 0;
         boolean changed;
@@ -217,19 +229,19 @@ public class HybridEnrollmentService {
             pass++;
 
             for (Student student : students) {
-                for (RequestChoice request : requestsByStudent.getOrDefault(student.getStudentID(), List.of())) {
+                for (RequestChoice request : requestsByStudent.getOrDefault(student.getStudentID(), StudentRequests.EMPTY).requests()) {
                     if (state.isAssigned(student.getStudentID(), request.course().getCourseID())) {
                         continue;
                     }
 
                     if (state.hasSeat(request.course().getCourseID()) && isFeasible(student, request, state)) {
-                        state.assign(student, request, scoreRequest(student, request.course(), request.rank(), request.mandatory(), constraints));
+                        state.assign(student, request);
                         improvements++;
                         changed = true;
                         continue;
                     }
 
-                    if (tryDisplacement(student, request, requestsByStudent, state, constraints)) {
+                    if (tryDisplacement(student, request, requestsByStudent, state)) {
                         improvements++;
                         changed = true;
                     }
@@ -243,23 +255,22 @@ public class HybridEnrollmentService {
     private boolean tryDisplacement(
             Student requester,
             RequestChoice requestedCourse,
-            Map<Integer, List<RequestChoice>> requestsByStudent,
-            AssignmentState state,
-            Map<String, ConstraintRule> constraints
+            Map<Integer, StudentRequests> requestsByStudent,
+            AssignmentState state
     ) {
         List<AssignmentChoice> currentAssignees = new ArrayList<>(state.assignmentsForCourse(requestedCourse.course().getCourseID()));
         currentAssignees.sort(Comparator
-                .comparingDouble((AssignmentChoice choice) -> accessPriority(choice.student(), choice.mandatory()))
+                .comparingDouble(AssignmentChoice::accessPriority)
                 .thenComparingInt(choice -> choice.student().getStudentID()));
 
         for (AssignmentChoice assignee : currentAssignees) {
-            if (accessPriority(requester, requestedCourse.mandatory()) <= accessPriority(assignee.student(), assignee.mandatory())) {
+            if (requestedCourse.accessPriority() <= assignee.accessPriority()) {
                 continue;
             }
 
             RequestChoice alternative = findBestAlternativeRequest(
                     assignee.student(),
-                    requestsByStudent.getOrDefault(assignee.student().getStudentID(), List.of()),
+                    requestsByStudent.getOrDefault(assignee.student().getStudentID(), StudentRequests.EMPTY).requests(),
                     state,
                     requestedCourse.course().getCourseID()
             );
@@ -268,8 +279,8 @@ public class HybridEnrollmentService {
             }
 
             double currentScore = assignee.score();
-            double replacementScore = scoreRequest(assignee.student(), alternative.course(), alternative.rank(), alternative.mandatory(), constraints);
-            double requesterScore = scoreRequest(requester, requestedCourse.course(), requestedCourse.rank(), requestedCourse.mandatory(), constraints);
+            double replacementScore = alternative.score();
+            double requesterScore = requestedCourse.score();
 
             boolean mandatoryUpgrade = requestedCourse.mandatory() && !assignee.mandatory();
             boolean betterTotalScore = requesterScore + replacementScore > currentScore;
@@ -278,14 +289,14 @@ public class HybridEnrollmentService {
             }
 
             state.unassign(assignee.student().getStudentID(), requestedCourse.course().getCourseID());
-            state.assign(assignee.student(), alternative, replacementScore);
+            state.assign(assignee.student(), alternative);
             if (isFeasible(requester, requestedCourse, state)) {
-                state.assign(requester, requestedCourse, requesterScore);
+                state.assign(requester, requestedCourse);
                 return true;
             }
 
             state.unassign(assignee.student().getStudentID(), alternative.course().getCourseID());
-            state.assign(assignee.student(), assignee.request(), assignee.score());
+            state.assign(assignee.student(), assignee.request());
         }
 
         return false;
@@ -324,7 +335,7 @@ public class HybridEnrollmentService {
             return false;
         }
 
-        for (AssignmentChoice assignment : state.assignmentsForStudent(student.getStudentID())) {
+        for (AssignmentChoice assignment : state.assignmentsForStudentOnDay(student.getStudentID(), course.getDay())) {
             if (assignment.course().overlapsWith(course)) {
                 return false;
             }
@@ -338,23 +349,18 @@ public class HybridEnrollmentService {
             Course course,
             int preferenceRank,
             boolean mandatory,
-            Map<String, ConstraintRule> constraints
+            WeightProfile weights
     ) {
-        int coursePreferenceWeight = constraintWeight(constraints, "COURSE_PREFERENCE_RANK", 24);
-        int dayWeight = constraintWeight(constraints, "PREFERRED_DAYS", 14);
-        int timeWeight = constraintWeight(constraints, "TIME_PREFERENCE", 18);
-        int mandatoryWeight = constraintWeight(constraints, "MANDATORY_PRIORITY", 75);
-
         int invertedRank = Math.max(1, 6 - preferenceRank);
-        double score = invertedRank * coursePreferenceWeight;
+        double score = invertedRank * weights.coursePreferenceWeight();
         if (student.prefersDay(course.getDay())) {
-            score += dayWeight;
+            score += weights.dayWeight();
         }
         if (student.prefersCourseTime(course)) {
-            score += timeWeight;
+            score += weights.timeWeight();
         }
         if (mandatory) {
-            score += mandatoryWeight;
+            score += weights.mandatoryWeight();
         }
 
         score += Math.max(0, 5 - student.getPriorityLevel()) * 6.0;
@@ -373,18 +379,42 @@ public class HybridEnrollmentService {
         return score;
     }
 
-    private int constraintWeight(Map<String, ConstraintRule> constraints, String name, int defaultValue) {
-        ConstraintRule rule = constraints.get(name);
-        return rule == null ? defaultValue : rule.getWeight();
+    private record WeightProfile(int coursePreferenceWeight, int dayWeight, int timeWeight, int mandatoryWeight) {
+        private static WeightProfile from(Map<String, ConstraintRule> constraints) {
+            return new WeightProfile(
+                    constraintWeight(constraints, "COURSE_PREFERENCE_RANK", 24),
+                    constraintWeight(constraints, "PREFERRED_DAYS", 14),
+                    constraintWeight(constraints, "TIME_PREFERENCE", 18),
+                    constraintWeight(constraints, "MANDATORY_PRIORITY", 75)
+            );
+        }
+
+        private static int constraintWeight(Map<String, ConstraintRule> constraints, String name, int defaultValue) {
+            ConstraintRule rule = constraints.get(name);
+            return rule == null ? defaultValue : rule.getWeight();
+        }
     }
 
-    private record RequestChoice(Course course, int rank, boolean mandatory, double score) {
+    private record TrackYearKey(String track, int year) {
+    }
+
+    private record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
+        private static final StudentRequests EMPTY = new StudentRequests(List.of(), 0);
+
+        private int size() {
+            return requests.size();
+        }
+    }
+
+    private record RequestChoice(Course course, int rank, boolean mandatory, double score, double accessPriority) {
     }
 
     private static final class AssignmentState {
         private final Map<Integer, Integer> remainingSeatsByCourse = new HashMap<>();
         private final Map<Integer, Map<Integer, AssignmentChoice>> assignmentsByStudent = new HashMap<>();
-        private final Map<Integer, List<AssignmentChoice>> assignmentsByCourse = new HashMap<>();
+        private final Map<Integer, Map<String, List<AssignmentChoice>>> assignmentsByStudentDay = new HashMap<>();
+        private final Map<Integer, Integer> mandatoryAssignmentsByStudent = new HashMap<>();
+        private final Map<Integer, Map<Integer, AssignmentChoice>> assignmentsByCourse = new HashMap<>();
 
         private AssignmentState(Collection<Course> courses) {
             for (Course course : courses) {
@@ -400,12 +430,19 @@ public class HybridEnrollmentService {
             return assignmentsByStudent.getOrDefault(studentId, Map.of()).containsKey(courseId);
         }
 
-        private void assign(Student student, RequestChoice request, double score) {
-            AssignmentChoice choice = new AssignmentChoice(student, request.course(), request, score);
+        private void assign(Student student, RequestChoice request) {
+            AssignmentChoice choice = new AssignmentChoice(student, request.course(), request, request.score(), request.accessPriority());
             assignmentsByStudent.computeIfAbsent(student.getStudentID(), ignored -> new LinkedHashMap<>())
                     .put(request.course().getCourseID(), choice);
-            assignmentsByCourse.computeIfAbsent(request.course().getCourseID(), ignored -> new ArrayList<>())
+            assignmentsByStudentDay
+                    .computeIfAbsent(student.getStudentID(), ignored -> new HashMap<>())
+                    .computeIfAbsent(request.course().getDay(), ignored -> new ArrayList<>())
                     .add(choice);
+            assignmentsByCourse.computeIfAbsent(request.course().getCourseID(), ignored -> new LinkedHashMap<>())
+                    .put(student.getStudentID(), choice);
+            if (request.mandatory()) {
+                mandatoryAssignmentsByStudent.merge(student.getStudentID(), 1, Integer::sum);
+            }
             remainingSeatsByCourse.computeIfPresent(request.course().getCourseID(), (ignored, seats) -> seats - 1);
         }
 
@@ -414,21 +451,29 @@ public class HybridEnrollmentService {
             if (removed == null) {
                 return;
             }
-            assignmentsByCourse.getOrDefault(courseId, List.of())
-                    .removeIf(choice -> choice.student().getStudentID() == studentId);
+            Map<String, List<AssignmentChoice>> dayAssignments = assignmentsByStudentDay.getOrDefault(studentId, Map.of());
+            List<AssignmentChoice> assignmentsOnDay = dayAssignments.getOrDefault(removed.course().getDay(), List.of());
+            assignmentsOnDay.removeIf(choice -> choice.course().getCourseID() == courseId);
+            if (assignmentsOnDay.isEmpty() && dayAssignments.containsKey(removed.course().getDay())) {
+                dayAssignments.remove(removed.course().getDay());
+            }
+            assignmentsByCourse.getOrDefault(courseId, Map.of()).remove(studentId);
+            if (removed.mandatory()) {
+                mandatoryAssignmentsByStudent.computeIfPresent(studentId, (ignored, count) -> Math.max(0, count - 1));
+            }
             remainingSeatsByCourse.computeIfPresent(courseId, (ignored, seats) -> seats + 1);
         }
 
-        private List<AssignmentChoice> assignmentsForStudent(int studentId) {
-            return new ArrayList<>(assignmentsByStudent.getOrDefault(studentId, Map.of()).values());
+        private Collection<AssignmentChoice> assignmentsForStudentOnDay(int studentId, String day) {
+            return assignmentsByStudentDay.getOrDefault(studentId, Map.of()).getOrDefault(day, List.of());
         }
 
-        private List<AssignmentChoice> assignmentsForCourse(int courseId) {
-            return assignmentsByCourse.getOrDefault(courseId, List.of());
+        private Collection<AssignmentChoice> assignmentsForCourse(int courseId) {
+            return assignmentsByCourse.getOrDefault(courseId, Map.of()).values();
         }
 
         private int mandatoryAssignmentCount(int studentId) {
-            return (int) assignmentsForStudent(studentId).stream().filter(AssignmentChoice::mandatory).count();
+            return mandatoryAssignmentsByStudent.getOrDefault(studentId, 0);
         }
 
         private int totalAssignments() {
@@ -457,7 +502,7 @@ public class HybridEnrollmentService {
         }
     }
 
-    private record AssignmentChoice(Student student, Course course, RequestChoice request, double score) {
+    private record AssignmentChoice(Student student, Course course, RequestChoice request, double score, double accessPriority) {
         private boolean mandatory() {
             return request.mandatory();
         }
