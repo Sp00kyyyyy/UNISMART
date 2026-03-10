@@ -1,5 +1,10 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.service;
 
+import com.example.java_main_proj.model.ConstraintRule;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.CoursePreference;
+import com.example.java_main_proj.model.CourseRequirement;
+import com.example.java_main_proj.model.Student;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-final class SchedulePlanningService {
-    Map<Integer, Set<Integer>> buildMandatoryCoursesByStudent(
+public final class SchedulePlanningService {
+    public Map<Integer, Set<Integer>> buildMandatoryCoursesByStudent(
             List<Student> students,
             List<CourseRequirement> requirements,
             Map<Integer, Course> coursesById
@@ -34,7 +39,7 @@ final class SchedulePlanningService {
         return mandatoryCoursesByStudent;
     }
 
-    Map<Integer, StudentRequests> buildRequestsByStudent(
+    public Map<Integer, StudentRequests> buildRequestsByStudent(
             List<Student> students,
             Map<Integer, Course> coursesById,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
@@ -89,7 +94,7 @@ final class SchedulePlanningService {
         return requestsByStudent;
     }
 
-    Comparator<Student> studentComparator(
+    public Comparator<Student> studentComparator(
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
             Map<Integer, StudentRequests> requestsByStudent
     ) {
@@ -149,7 +154,7 @@ final class SchedulePlanningService {
         return score;
     }
 
-    record WeightProfile(int coursePreferenceWeight, int dayWeight, int timeWeight, int mandatoryWeight) {
+    public record WeightProfile(int coursePreferenceWeight, int dayWeight, int timeWeight, int mandatoryWeight) {
         private static WeightProfile from(Map<String, ConstraintRule> constraints) {
             return new WeightProfile(
                     constraintWeight(constraints, "COURSE_PREFERENCE_RANK", 24),
@@ -165,10 +170,10 @@ final class SchedulePlanningService {
         }
     }
 
-    record TrackYearKey(String track, int year) {
+    public record TrackYearKey(String track, int year) {
     }
 
-    record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
+    public record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
         static final StudentRequests EMPTY = new StudentRequests(List.of(), 0);
 
         int size() {
@@ -176,6 +181,6 @@ final class SchedulePlanningService {
         }
     }
 
-    record RequestChoice(Course course, int rank, boolean mandatory, double score, double accessPriority) {
+    public record RequestChoice(Course course, int rank, boolean mandatory, double score, double accessPriority) {
     }
 }

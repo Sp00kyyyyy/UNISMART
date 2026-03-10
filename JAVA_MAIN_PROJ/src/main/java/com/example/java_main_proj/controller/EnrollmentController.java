@@ -1,5 +1,7 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.controller;
 
+import com.example.java_main_proj.model.EnrollmentRunReport;
+import com.example.java_main_proj.service.HybridEnrollmentService;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;

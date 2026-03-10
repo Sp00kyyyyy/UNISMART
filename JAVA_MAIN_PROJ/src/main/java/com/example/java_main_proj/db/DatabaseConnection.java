@@ -1,4 +1,4 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.db;
 
 import java.io.File;
 import java.net.URISyntaxException;

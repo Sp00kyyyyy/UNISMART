@@ -1,5 +1,14 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.service;
 
+import com.example.java_main_proj.model.ConstraintRule;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.CourseRequirement;
+import com.example.java_main_proj.model.EnrollmentDecision;
+import com.example.java_main_proj.model.EnrollmentResult;
+import com.example.java_main_proj.model.EnrollmentRunReport;
+import com.example.java_main_proj.model.Student;
+import com.example.java_main_proj.repository.SchedulingDataRepository;
+import com.example.java_main_proj.state.AssignmentState;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

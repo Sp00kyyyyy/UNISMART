@@ -13,7 +13,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.java_main_proj.EnrollmentController"
+            fx:controller="com.example.java_main_proj.controller.EnrollmentController"
             prefWidth="800" prefHeight="600">
 
     <top>

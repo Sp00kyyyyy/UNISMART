@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.example.java_main_proj.CourseController"
+            fx:controller="com.example.java_main_proj.controller.CourseController"
       spacing="10" style="-fx-background-color: #f4f4f4;">
 
     <padding>

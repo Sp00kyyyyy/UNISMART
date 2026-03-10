@@ -1,5 +1,11 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.repository;
 
+import com.example.java_main_proj.model.ConstraintRule;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.CourseRequirement;
+import com.example.java_main_proj.model.EnrollmentDecision;
+import com.example.java_main_proj.model.EnrollmentResult;
+import com.example.java_main_proj.model.Student;
 import java.util.List;
 import java.util.Map;
 

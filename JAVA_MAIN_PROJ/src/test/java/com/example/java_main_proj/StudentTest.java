@@ -1,5 +1,7 @@
 package com.example.java_main_proj;
 
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.Student;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

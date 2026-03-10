@@ -1,4 +1,4 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.model;
 
 public class CourseRequirement {
     private final int courseId;

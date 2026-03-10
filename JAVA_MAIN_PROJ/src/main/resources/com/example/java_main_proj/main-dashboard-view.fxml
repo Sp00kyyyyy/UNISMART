@@ -12,7 +12,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.java_main_proj.MainDashboardController"
+            fx:controller="com.example.java_main_proj.controller.MainDashboardController"
             prefWidth="1000" prefHeight="700">
 
     <top>

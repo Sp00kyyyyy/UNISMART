@@ -1,5 +1,6 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.controller;
 
+import com.example.java_main_proj.db.DatabaseConnection;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

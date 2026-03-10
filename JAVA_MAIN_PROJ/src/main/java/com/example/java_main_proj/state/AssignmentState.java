@@ -1,5 +1,9 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.state;
 
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.EnrollmentDecision;
+import com.example.java_main_proj.model.Student;
+import com.example.java_main_proj.service.SchedulePlanningService;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -8,28 +12,28 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-final class AssignmentState {
+public final class AssignmentState {
     private final Map<Integer, Integer> remainingSeatsByCourse = new HashMap<>();
     private final Map<Integer, Map<Integer, AssignmentChoice>> assignmentsByStudent = new HashMap<>();
     private final Map<Integer, Map<String, List<AssignmentChoice>>> assignmentsByStudentDay = new HashMap<>();
     private final Map<Integer, Integer> mandatoryAssignmentsByStudent = new HashMap<>();
     private final Map<Integer, Map<Integer, AssignmentChoice>> assignmentsByCourse = new HashMap<>();
 
-    AssignmentState(Collection<Course> courses) {
+    public AssignmentState(Collection<Course> courses) {
         for (Course course : courses) {
             remainingSeatsByCourse.put(course.getCourseID(), Math.max(0, course.getCapacity() - course.getEnrolledStudents()));
         }
     }
 
-    boolean hasSeat(int courseId) {
+    public boolean hasSeat(int courseId) {
         return remainingSeatsByCourse.getOrDefault(courseId, 0) > 0;
     }
 
-    boolean isAssigned(int studentId, int courseId) {
+    public boolean isAssigned(int studentId, int courseId) {
         return assignmentsByStudent.getOrDefault(studentId, Map.of()).containsKey(courseId);
     }
 
-    void assign(Student student, SchedulePlanningService.RequestChoice request) {
+    public void assign(Student student, SchedulePlanningService.RequestChoice request) {
         AssignmentChoice choice = new AssignmentChoice(student, request.course(), request, request.score(), request.accessPriority());
         assignmentsByStudent.computeIfAbsent(student.getStudentID(), ignored -> new LinkedHashMap<>())
                 .put(request.course().getCourseID(), choice);
@@ -45,7 +49,7 @@ final class AssignmentState {
         remainingSeatsByCourse.computeIfPresent(request.course().getCourseID(), (ignored, seats) -> seats - 1);
     }
 
-    void unassign(int studentId, int courseId) {
+    public void unassign(int studentId, int courseId) {
         AssignmentChoice removed = assignmentsByStudent.getOrDefault(studentId, Map.of()).remove(courseId);
         if (removed == null) {
             return;
@@ -65,23 +69,23 @@ final class AssignmentState {
         remainingSeatsByCourse.computeIfPresent(courseId, (ignored, seats) -> seats + 1);
     }
 
-    Collection<AssignmentChoice> assignmentsForStudentOnDay(int studentId, String day) {
+    public Collection<AssignmentChoice> assignmentsForStudentOnDay(int studentId, String day) {
         return assignmentsByStudentDay.getOrDefault(studentId, Map.of()).getOrDefault(day, List.of());
     }
 
-    Collection<AssignmentChoice> assignmentsForCourse(int courseId) {
+    public Collection<AssignmentChoice> assignmentsForCourse(int courseId) {
         return assignmentsByCourse.getOrDefault(courseId, Map.of()).values();
     }
 
-    int mandatoryAssignmentCount(int studentId) {
+    public int mandatoryAssignmentCount(int studentId) {
         return mandatoryAssignmentsByStudent.getOrDefault(studentId, 0);
     }
 
-    int totalAssignments() {
+    public int totalAssignments() {
         return assignmentsByStudent.values().stream().mapToInt(Map::size).sum();
     }
 
-    List<EnrollmentDecision> toDecisions(String academicYear, String semester) {
+    public List<EnrollmentDecision> toDecisions(String academicYear, String semester) {
         List<EnrollmentDecision> decisions = new ArrayList<>();
         for (Map<Integer, AssignmentChoice> assignmentMap : assignmentsByStudent.values()) {
             for (AssignmentChoice assignment : assignmentMap.values()) {
@@ -102,14 +106,14 @@ final class AssignmentState {
         return decisions;
     }
 
-    record AssignmentChoice(
+    public record AssignmentChoice(
             Student student,
             Course course,
             SchedulePlanningService.RequestChoice request,
             double score,
             double accessPriority
     ) {
-        boolean mandatory() {
+        public boolean mandatory() {
             return request.mandatory();
         }
     }

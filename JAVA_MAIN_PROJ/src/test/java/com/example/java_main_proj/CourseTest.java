@@ -1,5 +1,6 @@
 package com.example.java_main_proj;
 
+import com.example.java_main_proj.model.Course;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

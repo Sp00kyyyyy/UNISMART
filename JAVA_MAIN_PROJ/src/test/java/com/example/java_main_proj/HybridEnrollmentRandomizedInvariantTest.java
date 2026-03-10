@@ -1,5 +1,15 @@
 package com.example.java_main_proj;
 
+import com.example.java_main_proj.model.ConstraintRule;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.CoursePreference;
+import com.example.java_main_proj.model.CourseRequirement;
+import com.example.java_main_proj.model.EnrollmentDecision;
+import com.example.java_main_proj.model.EnrollmentResult;
+import com.example.java_main_proj.model.EnrollmentRunReport;
+import com.example.java_main_proj.model.Student;
+import com.example.java_main_proj.repository.SchedulingDataRepository;
+import com.example.java_main_proj.service.HybridEnrollmentService;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

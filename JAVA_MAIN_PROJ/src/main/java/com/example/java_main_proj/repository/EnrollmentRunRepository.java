@@ -1,5 +1,7 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.repository;
 
+import com.example.java_main_proj.db.DatabaseConnection;
+import com.example.java_main_proj.model.EnrollmentDecision;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

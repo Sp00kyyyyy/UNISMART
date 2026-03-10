@@ -1,5 +1,15 @@
 package com.example.java_main_proj;
 
+import com.example.java_main_proj.controller.CourseController;
+import com.example.java_main_proj.controller.EnrollmentController;
+import com.example.java_main_proj.controller.ResultsController;
+import com.example.java_main_proj.controller.StudentController;
+import com.example.java_main_proj.db.DatabaseConnection;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.EnrollmentResult;
+import com.example.java_main_proj.model.Student;
+import com.example.java_main_proj.repository.SchedulingDataRepository;
+import com.example.java_main_proj.service.HybridEnrollmentService;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;

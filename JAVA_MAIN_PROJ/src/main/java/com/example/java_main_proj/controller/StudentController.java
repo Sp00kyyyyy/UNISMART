@@ -1,5 +1,7 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.controller;
 
+import com.example.java_main_proj.model.Student;
+import com.example.java_main_proj.repository.SchedulingDataRepository;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;

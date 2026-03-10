@@ -76,7 +76,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.example.java_main_proj/com.example.java_main_proj.UniSmartApplication</mainClass>
+                            <mainClass>com.example.java_main_proj/com.example.java_main_proj.app.UniSmartApplication</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>

@@ -1,5 +1,11 @@
-package com.example.java_main_proj;
+package com.example.java_main_proj.repository;
 
+import com.example.java_main_proj.db.DatabaseConnection;
+import com.example.java_main_proj.model.Course;
+import com.example.java_main_proj.model.CoursePreference;
+import com.example.java_main_proj.model.CourseRequirement;
+import com.example.java_main_proj.model.EnrollmentResult;
+import com.example.java_main_proj.model.Student;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
