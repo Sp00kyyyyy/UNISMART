@@ -33,6 +33,7 @@ public class HybridEnrollmentService {
         Map<String, ConstraintRule> constraints = repository.loadConstraints();
         List<Student> students = repository.loadStudents();
         List<Course> offeredCourses = repository.loadCourses(semester);
+        offeredCourses.forEach(course -> course.setEnrolledStudents(0));
         Map<Integer, Course> coursesById = offeredCourses.stream()
                 .collect(Collectors.toMap(Course::getCourseID, course -> course));
         List<CourseRequirement> requirements = repository.loadCourseRequirements();

@@ -136,7 +136,9 @@ final class EnrollmentRunStore {
                 updateStatement.setInt(2, entry.getKey());
                 updateStatement.addBatch();
             }
-            updateStatement.executeBatch();
+            if (!enrollmentCountsByCourse.isEmpty()) {
+                updateStatement.executeBatch();
+            }
         } catch (SQLException exception) {
             throw new IllegalStateException("Failed to synchronize course enrollment counts", exception);
         }
