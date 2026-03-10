@@ -108,6 +108,35 @@ class GuidewayIntegrationTest {
         assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_B, repository);
     }
 
+    @Test
+    void rerunningTheSameSemesterReplacesResultsWithoutDuplicates() throws Exception {
+        useIsolatedDatabaseCopy();
+
+        GuidewayRepository repository = new GuidewayRepository();
+        HybridEnrollmentService service = new HybridEnrollmentService();
+
+        EnrollmentRunReport firstRun = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_A);
+        Map<String, String> firstResults = loadAssignedCourseLists(ACADEMIC_YEAR, SEMESTER_A);
+        int firstEnrollmentCount = countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A);
+        int firstCourseSum = sumCourseEnrollmentCounts(SEMESTER_A);
+
+        EnrollmentRunReport secondRun = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_A);
+        Map<String, String> secondResults = loadAssignedCourseLists(ACADEMIC_YEAR, SEMESTER_A);
+        int secondEnrollmentCount = countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A);
+        int secondCourseSum = sumCourseEnrollmentCounts(SEMESTER_A);
+
+        assertAll(
+                () -> assertEquals(firstRun.getAssignedCourses(), firstEnrollmentCount),
+                () -> assertEquals(secondRun.getAssignedCourses(), secondEnrollmentCount),
+                () -> assertEquals(firstEnrollmentCount, secondEnrollmentCount),
+                () -> assertEquals(firstCourseSum, secondCourseSum),
+                () -> assertEquals(firstResults, secondResults),
+                () -> assertEquals(0, countDuplicateEnrollmentKeys())
+        );
+
+        assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_A, repository);
+    }
+
     private void useIsolatedDatabaseCopy() throws IOException {
         Path sourceDatabase = Path.of("src", "main", "resources", "UniSmartDB1.accdb").toAbsolutePath();
         Path tempDir = Files.createTempDirectory("unismart-db-test");
@@ -249,6 +278,19 @@ class GuidewayIntegrationTest {
              PreparedStatement statement = connection.prepareStatement(
                      "SELECT COALESCE(SUM(EnrolledStudents), 0) FROM Courses WHERE Semester = ?")) {
             statement.setString(1, semester);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    private int countDuplicateEnrollmentKeys() throws Exception {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT COUNT(*) FROM (" +
+                             "SELECT StudentID, CourseID, AcademicYear, Semester, COUNT(*) AS C " +
+                             "FROM Enrollment GROUP BY StudentID, CourseID, AcademicYear, Semester HAVING COUNT(*) > 1)")) {
             try (ResultSet resultSet = statement.executeQuery()) {
                 resultSet.next();
                 return resultSet.getInt(1);

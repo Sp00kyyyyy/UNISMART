@@ -11,10 +11,15 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -38,6 +43,12 @@ class JavaFxInteractionTest {
             latch.countDown();
         }
         assertTrue(latch.await(10, TimeUnit.SECONDS), "JavaFX toolkit did not start");
+    }
+
+    @AfterEach
+    void tearDown() {
+        DatabaseConnection.closeConnection();
+        System.clearProperty("unismart.db.path");
     }
 
     @Test
@@ -140,10 +151,45 @@ class JavaFxInteractionTest {
         });
     }
 
+    @Test
+    void enrollmentScreenCanRunTheSchedulerEndToEnd() throws Exception {
+        useIsolatedDatabaseCopy();
+        LoadedView<EnrollmentController> loaded = loadView("/com/example/java_main_proj/enrollment-view.fxml");
+
+        runOnFxThreadAndWait(() -> invoke(loaded.controller(), "startEnrollment"));
+
+        assertTrue(waitForFxCondition(() -> {
+            Label progressLabel = field(loaded.controller(), "progressLabel", Label.class);
+            Label statusLabel = field(loaded.controller(), "statusLabel", Label.class);
+            TextArea logArea = field(loaded.controller(), "logArea", TextArea.class);
+            return "100%".equals(progressLabel.getText())
+                    && statusLabel.getText().contains(SEMESTER_A)
+                    && !logArea.getText().isBlank();
+        }, 20), "Enrollment UI flow did not complete");
+
+        GuidewayRepository repository = new GuidewayRepository();
+        List<EnrollmentResult> results = repository.loadEnrollmentResults("2025-2026", SEMESTER_A);
+        assertFalse(results.isEmpty());
+        assertTrue(results.stream().allMatch(result -> result.getEnrolledCourses() > 0));
+    }
+
     private static void fireAction(ComboBox<String> comboBox) {
         if (comboBox.getOnAction() != null) {
             comboBox.getOnAction().handle(new ActionEvent(comboBox, comboBox));
         }
+    }
+
+    private static boolean waitForFxCondition(FxBooleanSupplier condition, int timeoutSeconds) throws Exception {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
+        while (System.nanoTime() < deadline) {
+            AtomicReference<Boolean> result = new AtomicReference<>(false);
+            runOnFxThreadAndWait(() -> result.set(condition.getAsBoolean()));
+            if (Boolean.TRUE.equals(result.get())) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return false;
     }
 
     private static <T> LoadedView<T> loadView(String resourcePath) throws Exception {
@@ -219,5 +265,19 @@ class JavaFxInteractionTest {
     @FunctionalInterface
     private interface FxAssertion {
         void run() throws Exception;
+    }
+
+    @FunctionalInterface
+    private interface FxBooleanSupplier {
+        boolean getAsBoolean() throws Exception;
+    }
+
+    private void useIsolatedDatabaseCopy() throws IOException {
+        Path sourceDatabase = Path.of("src", "main", "resources", "UniSmartDB1.accdb").toAbsolutePath();
+        Path tempDir = Files.createTempDirectory("unismart-javafx-db-test");
+        Path isolatedDatabase = tempDir.resolve("UniSmartDB1.accdb");
+        Files.copy(sourceDatabase, isolatedDatabase, StandardCopyOption.REPLACE_EXISTING);
+        DatabaseConnection.closeConnection();
+        System.setProperty("unismart.db.path", isolatedDatabase.toString());
     }
 }
