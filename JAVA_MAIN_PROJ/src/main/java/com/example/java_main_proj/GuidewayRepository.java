@@ -1,402 +1,52 @@
 package com.example.java_main_proj;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Time;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 public class GuidewayRepository {
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
-    private static final String SEMESTER_A = "סמסטר א'";
-    private static final String SEMESTER_B = "סמסטר ב'";
+    private final GuidewayCatalogLoader catalogLoader;
+    private final EnrollmentRunStore enrollmentRunStore;
+    private final EnrollmentResultsLoader enrollmentResultsLoader;
+
+    public GuidewayRepository() {
+        this(new GuidewayCatalogLoader(), new EnrollmentRunStore());
+    }
+
+    GuidewayRepository(GuidewayCatalogLoader catalogLoader, EnrollmentRunStore enrollmentRunStore) {
+        this.catalogLoader = catalogLoader;
+        this.enrollmentRunStore = enrollmentRunStore;
+        this.enrollmentResultsLoader = new EnrollmentResultsLoader(catalogLoader);
+    }
 
     public List<Student> loadStudents() {
-        Connection connection = DatabaseConnection.getConnection();
-        List<Student> students = new ArrayList<>();
-
-        String sql = "SELECT StudentID, FullName, ID_Number, [Year], Track, PriorityLevel, Seniority, GPA, " +
-                "TimePreference, PreferredDays, MaxMandatoryCourses FROM Students";
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            while (resultSet.next()) {
-                Student student = new Student();
-                student.setStudentID(resultSet.getInt("StudentID"));
-                student.setFullName(resultSet.getString("FullName"));
-                student.setIdNumber(resultSet.getString("ID_Number"));
-                student.setYear(resultSet.getInt("Year"));
-                student.setTrack(resultSet.getString("Track"));
-                student.setPriorityLevel(resultSet.getInt("PriorityLevel"));
-                student.setSeniority(resultSet.getInt("Seniority"));
-                student.setGpa(resultSet.getDouble("GPA"));
-                student.setTimePreference(resultSet.getString("TimePreference"));
-                student.setPreferredDays(resultSet.getString("PreferredDays"));
-                student.setMaxMandatoryCourses(resultSet.getInt("MaxMandatoryCourses"));
-                students.add(student);
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load students", exception);
-        }
-
-        Map<Integer, List<CoursePreference>> preferencesByStudent = loadPreferencesByStudent();
-        for (Student student : students) {
-            student.setPreferences(preferencesByStudent.getOrDefault(student.getStudentID(), List.of()));
-        }
-
-        students.sort(Comparator
-                .comparingInt(Student::getPriorityLevel)
-                .thenComparing(Comparator.comparingInt(Student::getSeniority).reversed())
-                .thenComparing(Comparator.comparingDouble(Student::getGpa).reversed())
-                .thenComparing(Student::getStudentID));
-
-        return students;
+        return catalogLoader.loadStudents();
     }
 
     public List<Course> loadCourses(String semester) {
-        Connection connection = DatabaseConnection.getConnection();
-        List<Course> courses = new ArrayList<>();
-
-        String sql = "SELECT CourseID, CourseName, CourseType, Lecturer, Day, StartTime, EndTime, " +
-                "Capacity, EnrolledStudents, Semester FROM Courses";
-        if (semester != null && !semester.isBlank()) {
-            sql += " WHERE Semester = ?";
-        }
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            if (semester != null && !semester.isBlank()) {
-                statement.setString(1, semester);
-            }
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    courses.add(new Course(
-                            resultSet.getInt("CourseID"),
-                            resultSet.getString("CourseName"),
-                            resultSet.getString("CourseType"),
-                            resultSet.getString("Lecturer"),
-                            resultSet.getString("Day"),
-                            formatTime(resultSet.getTime("StartTime")),
-                            formatTime(resultSet.getTime("EndTime")),
-                            resultSet.getInt("Capacity"),
-                            resultSet.getInt("EnrolledStudents"),
-                            resultSet.getString("Semester")
-                    ));
-                }
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load courses", exception);
-        }
-
-        courses.sort(Comparator.comparing(Course::getCourseID));
-        return courses;
+        return catalogLoader.loadCourses(semester);
     }
 
     public List<CourseRequirement> loadCourseRequirements() {
-        Connection connection = DatabaseConnection.getConnection();
-        List<CourseRequirement> requirements = new ArrayList<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT CourseID, Track, [Year], IsMandatory FROM CourseTrackRules")) {
-            while (resultSet.next()) {
-                requirements.add(new CourseRequirement(
-                        resultSet.getInt("CourseID"),
-                        resultSet.getString("Track"),
-                        resultSet.getInt("Year"),
-                        resultSet.getBoolean("IsMandatory")
-                ));
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load course-track rules", exception);
-        }
-
-        return requirements;
+        return catalogLoader.loadCourseRequirements();
     }
 
     public Map<String, ConstraintRule> loadConstraints() {
-        Connection connection = DatabaseConnection.getConnection();
-        Map<String, ConstraintRule> constraints = new LinkedHashMap<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT ConstraintName, Description, ConstraintType, Weight FROM [Constraints]")) {
-            while (resultSet.next()) {
-                ConstraintRule rule = new ConstraintRule(
-                        resultSet.getString("ConstraintName"),
-                        resultSet.getString("Description"),
-                        resultSet.getString("ConstraintType"),
-                        resultSet.getInt("Weight")
-                );
-                constraints.put(rule.getName(), rule);
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load constraints", exception);
-        }
-
-        return constraints;
+        return catalogLoader.loadConstraints();
     }
 
     public void replaceEnrollmentRun(String academicYear, String semester, List<EnrollmentDecision> decisions) {
-        Connection connection = DatabaseConnection.getConnection();
-
-        try (PreparedStatement deleteStatement = connection.prepareStatement(
-                "DELETE FROM Enrollment WHERE AcademicYear = ? AND Semester = ?")) {
-            deleteStatement.setString(1, academicYear);
-            deleteStatement.setString(2, semester);
-            deleteStatement.executeUpdate();
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to clear previous enrollment results", exception);
-        }
-
-        if (decisions.isEmpty()) {
-            synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
-            return;
-        }
-
-        int nextEnrollmentId = nextIdentifier(connection, "Enrollment", "EnrollmentID");
-
-        try (PreparedStatement insertStatement = connection.prepareStatement(
-                "INSERT INTO Enrollment " +
-                        "(EnrollmentID, StudentID, CourseID, EnrollmentDate, Status, AcademicYear, Semester, AssignmentScore, RequestedRank, IsMandatory) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
-            for (EnrollmentDecision decision : decisions) {
-                insertStatement.setInt(1, nextEnrollmentId++);
-                insertStatement.setInt(2, decision.getStudentId());
-                insertStatement.setInt(3, decision.getCourseId());
-                insertStatement.setTimestamp(4, java.sql.Timestamp.valueOf(LocalDateTime.now()));
-                insertStatement.setString(5, "ASSIGNED");
-                insertStatement.setString(6, decision.getAcademicYear());
-                insertStatement.setString(7, decision.getSemester());
-                insertStatement.setDouble(8, decision.getAssignmentScore());
-                insertStatement.setInt(9, decision.getRequestedRank());
-                insertStatement.setBoolean(10, decision.isMandatory());
-                insertStatement.addBatch();
-            }
-            insertStatement.executeBatch();
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to save enrollment decisions", exception);
-        }
-
-        synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
+        enrollmentRunStore.replaceEnrollmentRun(academicYear, semester, decisions);
     }
 
     public List<EnrollmentResult> loadEnrollmentResults(String academicYear, String semester) {
-        Map<Integer, Student> studentsById = new LinkedHashMap<>();
-        for (Student student : loadStudents()) {
-            studentsById.put(student.getStudentID(), student);
-        }
-
-        Map<Integer, Integer> requestedCounts = buildRequestedCountsByStudent(studentsById.values(), semester);
-        Map<Integer, List<String>> assignedCourseNames = loadAssignedCourseNamesByStudent(academicYear, semester);
-        List<EnrollmentResult> results = new ArrayList<>();
-
-        for (Student student : studentsById.values()) {
-            int requested = requestedCounts.getOrDefault(student.getStudentID(), 0);
-            if (requested == 0) {
-                continue;
-            }
-            List<String> assigned = assignedCourseNames.getOrDefault(student.getStudentID(), List.of());
-            int enrolled = assigned.size();
-            String status;
-            if (requested > 0 && enrolled == requested) {
-                status = "הצלחה מלאה";
-            } else if (enrolled > 0) {
-                status = "שיבוץ חלקי";
-            } else {
-                status = "ללא שיבוץ";
-            }
-
-            results.add(new EnrollmentResult(
-                    student.getIdNumber(),
-                    student.getFullName(),
-                    student.getYear() + " שנה",
-                    requested,
-                    enrolled,
-                    status,
-                    String.join(", ", assigned)
-            ));
-        }
-
-        results.sort(Comparator
-                .comparingInt(EnrollmentResult::getEnrolledCourses).reversed()
-                .thenComparing(EnrollmentResult::getStudentName));
-        return results;
+        return enrollmentResultsLoader.loadEnrollmentResults(academicYear, semester, loadCourseRequirements());
     }
 
     public List<String> loadAcademicYearsWithResults() {
-        Connection connection = DatabaseConnection.getConnection();
-        Set<String> values = new TreeSet<>(Comparator.reverseOrder());
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT DISTINCT AcademicYear FROM Enrollment WHERE AcademicYear IS NOT NULL")) {
-            while (resultSet.next()) {
-                String academicYear = resultSet.getString("AcademicYear");
-                if (academicYear != null && !academicYear.isBlank()) {
-                    values.add(academicYear);
-                }
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load academic years", exception);
-        }
-
-        if (values.isEmpty()) {
-            values.add("2025-2026");
-        }
-
-        return new ArrayList<>(values);
+        return enrollmentRunStore.loadAcademicYearsWithResults();
     }
 
     public List<String> loadSemestersWithResults() {
-        return List.of(SEMESTER_A, SEMESTER_B);
-    }
-
-    private Map<Integer, Integer> buildRequestedCountsByStudent(Iterable<Student> students, String semester) {
-        List<Course> offeredCourses = loadCourses(semester);
-        Set<Integer> offeredCourseIds = offeredCourses.stream()
-                .map(Course::getCourseID)
-                .collect(java.util.stream.Collectors.toSet());
-
-        Map<String, Set<Integer>> mandatoryCoursesByTrackAndYear = new HashMap<>();
-        for (CourseRequirement requirement : loadCourseRequirements()) {
-            if (!requirement.isMandatory() || !offeredCourseIds.contains(requirement.getCourseId())) {
-                continue;
-            }
-            mandatoryCoursesByTrackAndYear
-                    .computeIfAbsent(requirement.getTrack() + "|" + requirement.getYear(), ignored -> new java.util.LinkedHashSet<>())
-                    .add(requirement.getCourseId());
-        }
-
-        Map<Integer, Integer> requestedCounts = new HashMap<>();
-        for (Student student : students) {
-            Set<Integer> requestedCourseIds = new java.util.LinkedHashSet<>();
-            for (CoursePreference preference : student.getPreferences()) {
-                if (offeredCourseIds.contains(preference.getCourseId())) {
-                    requestedCourseIds.add(preference.getCourseId());
-                }
-            }
-            requestedCourseIds.addAll(mandatoryCoursesByTrackAndYear.getOrDefault(
-                    student.getTrack() + "|" + student.getYear(),
-                    Set.of()
-            ));
-            requestedCounts.put(student.getStudentID(), requestedCourseIds.size());
-        }
-
-        return requestedCounts;
-    }
-
-    private Map<Integer, List<String>> loadAssignedCourseNamesByStudent(String academicYear, String semester) {
-        Connection connection = DatabaseConnection.getConnection();
-        Map<Integer, List<String>> assignedCourseNames = new HashMap<>();
-
-        String sql = "SELECT e.StudentID, c.CourseName " +
-                "FROM Enrollment e " +
-                "INNER JOIN Courses c ON c.CourseID = e.CourseID " +
-                "WHERE e.AcademicYear = ? AND e.Semester = ? " +
-                "ORDER BY e.StudentID, e.RequestedRank";
-
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, academicYear);
-            statement.setString(2, semester);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    assignedCourseNames.computeIfAbsent(resultSet.getInt("StudentID"), ignored -> new ArrayList<>())
-                            .add(resultSet.getString("CourseName"));
-                }
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load assigned courses", exception);
-        }
-
-        return assignedCourseNames;
-    }
-
-    private Map<Integer, List<CoursePreference>> loadPreferencesByStudent() {
-        Connection connection = DatabaseConnection.getConnection();
-        Map<Integer, List<CoursePreference>> preferencesByStudent = new HashMap<>();
-
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(
-                     "SELECT StudentID, CourseID, PreferenceRank FROM StudentCoursePreferences ORDER BY StudentID, PreferenceRank")) {
-            while (resultSet.next()) {
-                preferencesByStudent.computeIfAbsent(resultSet.getInt("StudentID"), ignored -> new ArrayList<>())
-                        .add(new CoursePreference(resultSet.getInt("CourseID"), resultSet.getInt("PreferenceRank")));
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to load preferences", exception);
-        }
-
-        return preferencesByStudent;
-    }
-
-    private int nextIdentifier(Connection connection, String tableName, String columnName) {
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT MAX(" + columnName + ") FROM " + tableName)) {
-            if (resultSet.next()) {
-                return resultSet.getInt(1) + 1;
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to compute next identifier for " + tableName, exception);
-        }
-        return 1;
-    }
-
-    private void synchronizeCourseEnrollmentCounts(Connection connection, String academicYear, String semester) {
-        Map<Integer, Integer> enrollmentCountsByCourse = new HashMap<>();
-
-        try (PreparedStatement countStatement = connection.prepareStatement(
-                "SELECT CourseID, COUNT(*) AS EnrolledCount " +
-                        "FROM Enrollment " +
-                        "WHERE AcademicYear = ? AND Semester = ? " +
-                        "GROUP BY CourseID")) {
-            countStatement.setString(1, academicYear);
-            countStatement.setString(2, semester);
-            try (ResultSet resultSet = countStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    enrollmentCountsByCourse.put(
-                            resultSet.getInt("CourseID"),
-                            resultSet.getInt("EnrolledCount")
-                    );
-                }
-            }
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to calculate course enrollment counts", exception);
-        }
-
-        try (PreparedStatement resetStatement = connection.prepareStatement(
-                "UPDATE Courses SET EnrolledStudents = 0 WHERE Semester = ?");
-             PreparedStatement updateStatement = connection.prepareStatement(
-                     "UPDATE Courses SET EnrolledStudents = ? WHERE CourseID = ?")) {
-            resetStatement.setString(1, semester);
-            resetStatement.executeUpdate();
-
-            for (Map.Entry<Integer, Integer> entry : enrollmentCountsByCourse.entrySet()) {
-                updateStatement.setInt(1, entry.getValue());
-                updateStatement.setInt(2, entry.getKey());
-                updateStatement.addBatch();
-            }
-            updateStatement.executeBatch();
-        } catch (SQLException exception) {
-            throw new IllegalStateException("Failed to synchronize course enrollment counts", exception);
-        }
-    }
-
-    private String formatTime(Time time) {
-        if (time == null) {
-            return "";
-        }
-        return time.toLocalTime().format(TIME_FORMATTER);
+        return enrollmentRunStore.loadSemestersWithResults();
     }
 }
