@@ -54,7 +54,6 @@ class GuidewayIntegrationTest {
         assertAll(
                 () -> assertEquals(11, students.size()),
                 () -> assertEquals(10, courses.size()),
-                () -> assertTrue(courses.stream().allMatch(course -> course.getEnrolledStudents() == 0)),
                 () -> assertEquals(7, constraints.size()),
                 () -> assertEquals(20, requirements.size()),
                 () -> assertEquals(55, countPreferences()),
@@ -69,7 +68,8 @@ class GuidewayIntegrationTest {
                 () -> assertTrue(results.stream().allMatch(result -> FULL_STATUS.equals(result.getStatus()))),
                 () -> assertFalse(tableExists("Prerequisites")),
                 () -> assertFalse(tableExists("CompletedCourses")),
-                () -> assertEquals(33, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A))
+                () -> assertEquals(33, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A)),
+                () -> assertEquals(report.getAssignedCourses(), sumCourseEnrollmentCounts(SEMESTER_A))
         );
 
         assertRunRespectsHardConstraints(ACADEMIC_YEAR, SEMESTER_A, repository);
@@ -96,6 +96,8 @@ class GuidewayIntegrationTest {
                 () -> assertEquals(semesterAReport.getAssignedCourses(), semesterAEnrollments),
                 () -> assertEquals(semesterAEnrollments, countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_A)),
                 () -> assertEquals(semesterBReport.getAssignedCourses(), countEnrollmentsForRun(ACADEMIC_YEAR, SEMESTER_B)),
+                () -> assertEquals(semesterAReport.getAssignedCourses(), sumCourseEnrollmentCounts(SEMESTER_A)),
+                () -> assertEquals(semesterBReport.getAssignedCourses(), sumCourseEnrollmentCounts(SEMESTER_B)),
                 () -> assertTrue(semesterAReport.getAssignedCourses() > 0),
                 () -> assertTrue(semesterBReport.getAssignedCourses() > 0),
                 () -> assertEquals(List.of(SEMESTER_A, SEMESTER_B), repository.loadSemestersWithResults()),
@@ -235,6 +237,18 @@ class GuidewayIntegrationTest {
                      "SELECT COUNT(*) FROM Enrollment WHERE AcademicYear = ? AND Semester = ?")) {
             statement.setString(1, academicYear);
             statement.setString(2, semester);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getInt(1);
+            }
+        }
+    }
+
+    private int sumCourseEnrollmentCounts(String semester) throws Exception {
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT COALESCE(SUM(EnrolledStudents), 0) FROM Courses WHERE Semester = ?")) {
+            statement.setString(1, semester);
             try (ResultSet resultSet = statement.executeQuery()) {
                 resultSet.next();
                 return resultSet.getInt(1);

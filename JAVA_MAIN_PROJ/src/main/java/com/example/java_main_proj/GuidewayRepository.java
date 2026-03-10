@@ -161,6 +161,7 @@ public class GuidewayRepository {
         }
 
         if (decisions.isEmpty()) {
+            synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
             return;
         }
 
@@ -187,6 +188,8 @@ public class GuidewayRepository {
         } catch (SQLException exception) {
             throw new IllegalStateException("Failed to save enrollment decisions", exception);
         }
+
+        synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
     }
 
     public List<EnrollmentResult> loadEnrollmentResults(String academicYear, String semester) {
@@ -348,6 +351,46 @@ public class GuidewayRepository {
             throw new IllegalStateException("Failed to compute next identifier for " + tableName, exception);
         }
         return 1;
+    }
+
+    private void synchronizeCourseEnrollmentCounts(Connection connection, String academicYear, String semester) {
+        Map<Integer, Integer> enrollmentCountsByCourse = new HashMap<>();
+
+        try (PreparedStatement countStatement = connection.prepareStatement(
+                "SELECT CourseID, COUNT(*) AS EnrolledCount " +
+                        "FROM Enrollment " +
+                        "WHERE AcademicYear = ? AND Semester = ? " +
+                        "GROUP BY CourseID")) {
+            countStatement.setString(1, academicYear);
+            countStatement.setString(2, semester);
+            try (ResultSet resultSet = countStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    enrollmentCountsByCourse.put(
+                            resultSet.getInt("CourseID"),
+                            resultSet.getInt("EnrolledCount")
+                    );
+                }
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Failed to calculate course enrollment counts", exception);
+        }
+
+        try (PreparedStatement resetStatement = connection.prepareStatement(
+                "UPDATE Courses SET EnrolledStudents = 0 WHERE Semester = ?");
+             PreparedStatement updateStatement = connection.prepareStatement(
+                     "UPDATE Courses SET EnrolledStudents = ? WHERE CourseID = ?")) {
+            resetStatement.setString(1, semester);
+            resetStatement.executeUpdate();
+
+            for (Map.Entry<Integer, Integer> entry : enrollmentCountsByCourse.entrySet()) {
+                updateStatement.setInt(1, entry.getValue());
+                updateStatement.setInt(2, entry.getKey());
+                updateStatement.addBatch();
+            }
+            updateStatement.executeBatch();
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Failed to synchronize course enrollment counts", exception);
+        }
     }
 
     private String formatTime(Time time) {

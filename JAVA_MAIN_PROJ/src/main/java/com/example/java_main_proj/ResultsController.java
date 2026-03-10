@@ -85,6 +85,9 @@ public class ResultsController {
         if (!semesterFilterCombo.getItems().isEmpty()) {
             semesterFilterCombo.setValue(semesterFilterCombo.getItems().get(0));
         }
+
+        yearFilterCombo.setOnAction(event -> refreshResults());
+        semesterFilterCombo.setOnAction(event -> refreshResults());
     }
 
     private void updateStatistics() {
