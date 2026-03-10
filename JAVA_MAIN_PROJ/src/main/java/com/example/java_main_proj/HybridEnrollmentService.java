@@ -12,20 +12,20 @@ public class HybridEnrollmentService {
     private static final String FULL_STATUS = "\u05D4\u05E6\u05DC\u05D7\u05D4 \u05DE\u05DC\u05D0\u05D4";
     private static final String PARTIAL_STATUS = "\u05E9\u05D9\u05D1\u05D5\u05E5 \u05D7\u05DC\u05E7\u05D9";
 
-    private final GuidewayRepository repository;
-    private final EnrollmentPlanningSupport planningSupport;
+    private final SchedulingDataRepository repository;
+    private final SchedulePlanningService planningService;
 
     public HybridEnrollmentService() {
-        this(new GuidewayRepository());
+        this(new SchedulingDataRepository());
     }
 
-    public HybridEnrollmentService(GuidewayRepository repository) {
-        this(repository, new EnrollmentPlanningSupport());
+    public HybridEnrollmentService(SchedulingDataRepository repository) {
+        this(repository, new SchedulePlanningService());
     }
 
-    HybridEnrollmentService(GuidewayRepository repository, EnrollmentPlanningSupport planningSupport) {
+    HybridEnrollmentService(SchedulingDataRepository repository, SchedulePlanningService planningService) {
         this.repository = Objects.requireNonNull(repository, "repository");
-        this.planningSupport = Objects.requireNonNull(planningSupport, "planningSupport");
+        this.planningService = Objects.requireNonNull(planningService, "planningService");
     }
 
     public EnrollmentRunReport runEnrollment(String academicYear, String semester) {
@@ -39,19 +39,19 @@ public class HybridEnrollmentService {
         List<CourseRequirement> requirements = repository.loadCourseRequirements();
 
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent =
-                planningSupport.buildMandatoryCoursesByStudent(students, requirements, coursesById);
-        Map<Integer, EnrollmentPlanningSupport.StudentRequests> requestsByStudent =
-                planningSupport.buildRequestsByStudent(students, coursesById, mandatoryCoursesByStudent, constraints);
+                planningService.buildMandatoryCoursesByStudent(students, requirements, coursesById);
+        Map<Integer, SchedulePlanningService.StudentRequests> requestsByStudent =
+                planningService.buildRequestsByStudent(students, coursesById, mandatoryCoursesByStudent, constraints);
         int activeStudents = (int) requestsByStudent.values().stream()
                 .filter(studentRequests -> !studentRequests.requests().isEmpty())
                 .count();
 
         List<Student> orderedStudents = new ArrayList<>(students);
-        orderedStudents.sort(planningSupport.studentComparator(mandatoryCoursesByStudent, requestsByStudent));
+        orderedStudents.sort(planningService.studentComparator(mandatoryCoursesByStudent, requestsByStudent));
 
         AssignmentState state = new AssignmentState(offeredCourses);
         int requestedCourses = requestsByStudent.values().stream()
-                .mapToInt(EnrollmentPlanningSupport.StudentRequests::size)
+                .mapToInt(SchedulePlanningService.StudentRequests::size)
                 .sum();
 
         logLines.add("Guideway sync complete.");
@@ -62,7 +62,7 @@ public class HybridEnrollmentService {
         for (Student student : orderedStudents) {
             assignGreedy(
                     student,
-                    requestsByStudent.getOrDefault(student.getStudentID(), EnrollmentPlanningSupport.StudentRequests.EMPTY).requests(),
+                    requestsByStudent.getOrDefault(student.getStudentID(), SchedulePlanningService.StudentRequests.EMPTY).requests(),
                     state
             );
         }
@@ -109,10 +109,10 @@ public class HybridEnrollmentService {
 
     private void assignGreedy(
             Student student,
-            List<EnrollmentPlanningSupport.RequestChoice> requests,
+            List<SchedulePlanningService.RequestChoice> requests,
             AssignmentState state
     ) {
-        for (EnrollmentPlanningSupport.RequestChoice request : requests) {
+        for (SchedulePlanningService.RequestChoice request : requests) {
             if (state.isAssigned(student.getStudentID(), request.course().getCourseID())) {
                 continue;
             }
@@ -124,7 +124,7 @@ public class HybridEnrollmentService {
 
     private int runLocalImprovement(
             List<Student> students,
-            Map<Integer, EnrollmentPlanningSupport.StudentRequests> requestsByStudent,
+            Map<Integer, SchedulePlanningService.StudentRequests> requestsByStudent,
             AssignmentState state
     ) {
         int improvements = 0;
@@ -136,8 +136,8 @@ public class HybridEnrollmentService {
             pass++;
 
             for (Student student : students) {
-                for (EnrollmentPlanningSupport.RequestChoice request
-                        : requestsByStudent.getOrDefault(student.getStudentID(), EnrollmentPlanningSupport.StudentRequests.EMPTY).requests()) {
+                for (SchedulePlanningService.RequestChoice request
+                        : requestsByStudent.getOrDefault(student.getStudentID(), SchedulePlanningService.StudentRequests.EMPTY).requests()) {
                     if (state.isAssigned(student.getStudentID(), request.course().getCourseID())) {
                         continue;
                     }
@@ -162,8 +162,8 @@ public class HybridEnrollmentService {
 
     private boolean tryDisplacement(
             Student requester,
-            EnrollmentPlanningSupport.RequestChoice requestedCourse,
-            Map<Integer, EnrollmentPlanningSupport.StudentRequests> requestsByStudent,
+            SchedulePlanningService.RequestChoice requestedCourse,
+            Map<Integer, SchedulePlanningService.StudentRequests> requestsByStudent,
             AssignmentState state
     ) {
         List<AssignmentState.AssignmentChoice> currentAssignees =
@@ -177,11 +177,11 @@ public class HybridEnrollmentService {
                 continue;
             }
 
-            EnrollmentPlanningSupport.RequestChoice alternative = findBestAlternativeRequest(
+            SchedulePlanningService.RequestChoice alternative = findBestAlternativeRequest(
                     assignee.student(),
                     requestsByStudent.getOrDefault(
                             assignee.student().getStudentID(),
-                            EnrollmentPlanningSupport.StudentRequests.EMPTY
+                            SchedulePlanningService.StudentRequests.EMPTY
                     ).requests(),
                     state,
                     requestedCourse.course().getCourseID()
@@ -210,13 +210,13 @@ public class HybridEnrollmentService {
         return false;
     }
 
-    private EnrollmentPlanningSupport.RequestChoice findBestAlternativeRequest(
+    private SchedulePlanningService.RequestChoice findBestAlternativeRequest(
             Student student,
-            List<EnrollmentPlanningSupport.RequestChoice> requests,
+            List<SchedulePlanningService.RequestChoice> requests,
             AssignmentState state,
             int excludedCourseId
     ) {
-        for (EnrollmentPlanningSupport.RequestChoice request : requests) {
+        for (SchedulePlanningService.RequestChoice request : requests) {
             if (request.course().getCourseID() == excludedCourseId) {
                 continue;
             }
@@ -233,7 +233,7 @@ public class HybridEnrollmentService {
         return null;
     }
 
-    private boolean isFeasible(Student student, EnrollmentPlanningSupport.RequestChoice request, AssignmentState state) {
+    private boolean isFeasible(Student student, SchedulePlanningService.RequestChoice request, AssignmentState state) {
         Course course = request.course();
         if (!state.hasSeat(course.getCourseID())) {
             return false;

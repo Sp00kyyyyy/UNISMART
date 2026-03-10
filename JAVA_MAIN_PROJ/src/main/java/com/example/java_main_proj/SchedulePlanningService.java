@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-final class EnrollmentPlanningSupport {
+final class SchedulePlanningService {
     Map<Integer, Set<Integer>> buildMandatoryCoursesByStudent(
             List<Student> students,
             List<CourseRequirement> requirements,

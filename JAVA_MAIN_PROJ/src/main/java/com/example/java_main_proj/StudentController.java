@@ -28,7 +28,7 @@ public class StudentController {
     @FXML private Label statusLabel;
 
     private final ObservableList<Student> studentsList = FXCollections.observableArrayList();
-    private final GuidewayRepository repository = new GuidewayRepository();
+    private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     @FXML
     public void initialize() {

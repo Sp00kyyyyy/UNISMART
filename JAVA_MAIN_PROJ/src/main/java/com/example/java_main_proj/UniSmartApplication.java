@@ -7,10 +7,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class Launcher extends Application {
+public class UniSmartApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Launcher.class.getResource("/com/example/java_main_proj/hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(UniSmartApplication.class.getResource("/com/example/java_main_proj/main-dashboard-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1000, 700);
         stage.setTitle("UniSmart - מערכת שיבוץ סטודנטים");
         stage.setScene(scene);

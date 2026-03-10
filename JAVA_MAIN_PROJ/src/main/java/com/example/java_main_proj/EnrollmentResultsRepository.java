@@ -13,21 +13,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-final class EnrollmentResultsLoader {
+final class EnrollmentResultsRepository {
     private static final String FULL_STATUS = "\u05D4\u05E6\u05DC\u05D7\u05D4 \u05DE\u05DC\u05D0\u05D4";
     private static final String PARTIAL_STATUS = "\u05E9\u05D9\u05D1\u05D5\u05E5 \u05D7\u05DC\u05E7\u05D9";
     private static final String EMPTY_STATUS = "\u05DC\u05DC\u05D0 \u05E9\u05D9\u05D1\u05D5\u05E5";
     private static final String YEAR_SUFFIX = "\u05E9\u05E0\u05D4";
 
-    private final GuidewayCatalogLoader catalogLoader;
+    private final DatabaseCatalogReader catalogReader;
 
-    EnrollmentResultsLoader(GuidewayCatalogLoader catalogLoader) {
-        this.catalogLoader = catalogLoader;
+    EnrollmentResultsRepository(DatabaseCatalogReader catalogReader) {
+        this.catalogReader = catalogReader;
     }
 
     List<EnrollmentResult> loadEnrollmentResults(String academicYear, String semester, List<CourseRequirement> requirements) {
         Map<Integer, Student> studentsById = new LinkedHashMap<>();
-        for (Student student : catalogLoader.loadStudents()) {
+        for (Student student : catalogReader.loadStudents()) {
             studentsById.put(student.getStudentID(), student);
         }
 
@@ -69,7 +69,7 @@ final class EnrollmentResultsLoader {
             String semester,
             List<CourseRequirement> requirements
     ) {
-        List<Course> offeredCourses = catalogLoader.loadCourses(semester);
+        List<Course> offeredCourses = catalogReader.loadCourses(semester);
         Set<Integer> offeredCourseIds = offeredCourses.stream()
                 .map(Course::getCourseID)
                 .collect(java.util.stream.Collectors.toSet());

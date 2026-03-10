@@ -29,7 +29,7 @@ final class AssignmentState {
         return assignmentsByStudent.getOrDefault(studentId, Map.of()).containsKey(courseId);
     }
 
-    void assign(Student student, EnrollmentPlanningSupport.RequestChoice request) {
+    void assign(Student student, SchedulePlanningService.RequestChoice request) {
         AssignmentChoice choice = new AssignmentChoice(student, request.course(), request, request.score(), request.accessPriority());
         assignmentsByStudent.computeIfAbsent(student.getStudentID(), ignored -> new LinkedHashMap<>())
                 .put(request.course().getCourseID(), choice);
@@ -105,7 +105,7 @@ final class AssignmentState {
     record AssignmentChoice(
             Student student,
             Course course,
-            EnrollmentPlanningSupport.RequestChoice request,
+            SchedulePlanningService.RequestChoice request,
             double score,
             double accessPriority
     ) {

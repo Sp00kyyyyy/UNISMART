@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-final class EnrollmentRunStore {
+final class EnrollmentRunRepository {
     private static final String SEMESTER_A = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D0'";
     private static final String SEMESTER_B = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D1'";
 

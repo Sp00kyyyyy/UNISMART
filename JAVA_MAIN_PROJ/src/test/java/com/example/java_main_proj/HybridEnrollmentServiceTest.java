@@ -30,7 +30,7 @@ class HybridEnrollmentServiceTest {
                 new CoursePreference(1, 1)
         ));
 
-        StubGuidewayRepository repository = new StubGuidewayRepository(
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
                 List.of(electiveStudent, mandatoryStudent),
                 List.of(sharedCourse),
                 defaultConstraints(),
@@ -61,7 +61,7 @@ class HybridEnrollmentServiceTest {
                 new CoursePreference(2, 2)
         ));
 
-        StubGuidewayRepository repository = new StubGuidewayRepository(
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
                 List.of(student),
                 List.of(firstMandatory, secondMandatory),
                 defaultConstraints(),
@@ -95,7 +95,7 @@ class HybridEnrollmentServiceTest {
                 new CoursePreference(2, 1)
         ));
 
-        StubGuidewayRepository repository = new StubGuidewayRepository(
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
                 List.of(student),
                 List.of(lowerRankedCourse, higherRankedCourse),
                 defaultConstraints(),
@@ -138,7 +138,7 @@ class HybridEnrollmentServiceTest {
                 )
         );
 
-        StubGuidewayRepository repository = new StubGuidewayRepository(
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
                 List.of(student),
                 List.of(lowerScoredCourse, higherScoredCourse),
                 defaultConstraints(),
@@ -192,7 +192,7 @@ class HybridEnrollmentServiceTest {
                 List.of(new CoursePreference(1, 1))
         );
 
-        StubGuidewayRepository repository = new StubGuidewayRepository(
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
                 List.of(electiveStudent, mandatoryStudent),
                 List.of(contestedSeat, fallbackCourse),
                 defaultConstraints(),
@@ -277,14 +277,14 @@ class HybridEnrollmentServiceTest {
         return constraints;
     }
 
-    private static final class StubGuidewayRepository extends GuidewayRepository {
+    private static final class StubSchedulingDataRepository extends SchedulingDataRepository {
         private final List<Student> students;
         private final List<Course> courses;
         private final Map<String, ConstraintRule> constraints;
         private final List<CourseRequirement> requirements;
         private List<EnrollmentDecision> savedDecisions = List.of();
 
-        private StubGuidewayRepository(
+        private StubSchedulingDataRepository(
                 List<Student> students,
                 List<Course> courses,
                 Map<String, ConstraintRule> constraints,

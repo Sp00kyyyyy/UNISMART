@@ -34,7 +34,7 @@ public class ResultsController {
     @FXML private Label statusLabel;
 
     private final ObservableList<EnrollmentResult> allResults = FXCollections.observableArrayList();
-    private final GuidewayRepository repository = new GuidewayRepository();
+    private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     @FXML
     public void initialize() {

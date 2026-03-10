@@ -13,7 +13,7 @@ class ApplicationResourcesTest {
 
         // Act + Assert
         assertNotNull(classLoader.getResource("UniSmartDB1.accdb"));
-        assertNotNull(classLoader.getResource("com/example/java_main_proj/hello-view.fxml"));
+        assertNotNull(classLoader.getResource("com/example/java_main_proj/main-dashboard-view.fxml"));
         assertNotNull(classLoader.getResource("com/example/java_main_proj/student-view.fxml"));
         assertNotNull(classLoader.getResource("com/example/java_main_proj/course-view.fxml"));
         assertNotNull(classLoader.getResource("com/example/java_main_proj/enrollment-view.fxml"));

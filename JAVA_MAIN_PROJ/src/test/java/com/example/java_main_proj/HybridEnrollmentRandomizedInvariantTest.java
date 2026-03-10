@@ -188,7 +188,7 @@ class HybridEnrollmentRandomizedInvariantTest {
     private record ScenarioData(List<Student> students, List<Course> courses, List<CourseRequirement> requirements) {
     }
 
-    private static final class RandomizedRepository extends GuidewayRepository {
+    private static final class RandomizedRepository extends SchedulingDataRepository {
         private final List<Student> students;
         private final List<Course> courses;
         private final Map<String, ConstraintRule> constraints;

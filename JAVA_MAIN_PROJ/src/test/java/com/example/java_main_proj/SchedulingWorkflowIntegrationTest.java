@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class GuidewayIntegrationTest {
+class SchedulingWorkflowIntegrationTest {
     private static final String ACADEMIC_YEAR = "2025-2026";
     private static final String SEMESTER_A = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D0'";
     private static final String SEMESTER_B = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D1'";
@@ -38,7 +38,7 @@ class GuidewayIntegrationTest {
         // Arrange
         useIsolatedDatabaseCopy();
 
-        GuidewayRepository repository = new GuidewayRepository();
+        SchedulingDataRepository repository = new SchedulingDataRepository();
         HybridEnrollmentService service = new HybridEnrollmentService();
 
         // Act
@@ -78,7 +78,7 @@ class GuidewayIntegrationTest {
         // Arrange
         useIsolatedDatabaseCopy();
 
-        GuidewayRepository repository = new GuidewayRepository();
+        SchedulingDataRepository repository = new SchedulingDataRepository();
         HybridEnrollmentService service = new HybridEnrollmentService();
 
         // Act
@@ -110,7 +110,7 @@ class GuidewayIntegrationTest {
     void rerunningTheSameSemesterReplacesResultsWithoutDuplicates() throws Exception {
         useIsolatedDatabaseCopy();
 
-        GuidewayRepository repository = new GuidewayRepository();
+        SchedulingDataRepository repository = new SchedulingDataRepository();
         HybridEnrollmentService service = new HybridEnrollmentService();
 
         EnrollmentRunReport firstRun = service.runEnrollment(ACADEMIC_YEAR, SEMESTER_A);
@@ -144,7 +144,7 @@ class GuidewayIntegrationTest {
         System.setProperty("unismart.db.path", isolatedDatabase.toString());
     }
 
-    private void assertRunRespectsHardConstraints(String academicYear, String semester, GuidewayRepository repository) throws Exception {
+    private void assertRunRespectsHardConstraints(String academicYear, String semester, SchedulingDataRepository repository) throws Exception {
         Map<Integer, Student> studentsById = new LinkedHashMap<>();
         for (Student student : repository.loadStudents()) {
             studentsById.put(student.getStudentID(), student);

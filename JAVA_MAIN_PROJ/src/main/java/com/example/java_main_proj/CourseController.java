@@ -29,7 +29,7 @@ public class CourseController {
     @FXML private Label statusLabel;
 
     private final ObservableList<Course> coursesList = FXCollections.observableArrayList();
-    private final GuidewayRepository repository = new GuidewayRepository();
+    private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     @FXML
     public void initialize() {

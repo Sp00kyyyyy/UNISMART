@@ -30,7 +30,7 @@ class JavaFxViewSmokeTest {
 
     @Test
     void allViewsLoadWithTheirControllers() throws Exception {
-        assertViewLoads("/com/example/java_main_proj/hello-view.fxml");
+        assertViewLoads("/com/example/java_main_proj/main-dashboard-view.fxml");
         assertViewLoads("/com/example/java_main_proj/student-view.fxml");
         assertViewLoads("/com/example/java_main_proj/course-view.fxml");
         assertViewLoads("/com/example/java_main_proj/enrollment-view.fxml");

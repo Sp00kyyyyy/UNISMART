@@ -179,7 +179,7 @@ class JavaFxInteractionTest {
                     && !logArea.getText().isBlank();
         }, 20), "Enrollment UI flow did not complete");
 
-        GuidewayRepository repository = new GuidewayRepository();
+        SchedulingDataRepository repository = new SchedulingDataRepository();
         List<EnrollmentResult> results = repository.loadEnrollmentResults("2025-2026", SEMESTER_A);
         assertFalse(results.isEmpty());
         assertTrue(results.stream().anyMatch(result -> result.getEnrolledCourses() > 0));
