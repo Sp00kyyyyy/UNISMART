@@ -20,9 +20,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * שכבת קריאה ממסד הנתונים עבור נתוני הקטלוג של המערכת.
+ */
 final class DatabaseCatalogReader {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
+    /**
+     * טוען את כל הסטודנטים ומעשיר כל סטודנט גם בהעדפות הקורסים שלו.
+     */
     List<Student> loadStudents() {
         Connection connection = DatabaseConnection.getConnection();
         List<Student> students = new ArrayList<>();
@@ -33,6 +39,7 @@ final class DatabaseCatalogReader {
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
             while (resultSet.next()) {
+                // בונה את אובייקט הסטודנט מתוך שורת מסד אחת.
                 Student student = new Student();
                 student.setStudentID(resultSet.getInt("StudentID"));
                 student.setFullName(resultSet.getString("FullName"));
@@ -53,9 +60,11 @@ final class DatabaseCatalogReader {
 
         Map<Integer, List<CoursePreference>> preferencesByStudent = loadPreferencesByStudent(connection);
         for (Student student : students) {
+            // לאחר טעינת הנתונים הבסיסיים מצרפים לכל סטודנט את רשימת ההעדפות שלו.
             student.setPreferences(preferencesByStudent.getOrDefault(student.getStudentID(), List.of()));
         }
 
+        // מיון קבוע עוזר לשמור על התנהגות דטרמיניסטית גם לפני שלב התכנון.
         students.sort(Comparator
                 .comparingInt(Student::getPriorityLevel)
                 .thenComparing(Comparator.comparingInt(Student::getSeniority).reversed())
@@ -65,6 +74,9 @@ final class DatabaseCatalogReader {
         return students;
     }
 
+    /**
+     * טוען קורסים לפי סמסטר, או את כל הקורסים אם לא נבחר סמסטר.
+     */
     List<Course> loadCourses(String semester) {
         Connection connection = DatabaseConnection.getConnection();
         List<Course> courses = new ArrayList<>();
@@ -72,6 +84,7 @@ final class DatabaseCatalogReader {
         String sql = "SELECT CourseID, CourseName, CourseType, Lecturer, Day, StartTime, EndTime, " +
                 "Capacity, EnrolledStudents, Semester FROM Courses";
         if (semester != null && !semester.isBlank()) {
+            // אם הועבר סמסטר, מגבילים את הקריאה רק לקורסים הרלוונטיים.
             sql += " WHERE Semester = ?";
         }
 
@@ -82,6 +95,7 @@ final class DatabaseCatalogReader {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
+                    // כל שורה בטבלת Courses מתורגמת למודל Course מלא.
                     courses.add(new Course(
                             resultSet.getInt("CourseID"),
                             resultSet.getString("CourseName"),
@@ -100,10 +114,14 @@ final class DatabaseCatalogReader {
             throw new IllegalStateException("Failed to load courses", exception);
         }
 
+        // מיון לפי מזהה יוצר פלט עקבי וקל למעקב.
         courses.sort(Comparator.comparing(Course::getCourseID));
         return courses;
     }
 
+    /**
+     * טוען את כללי ההתאמה בין קורסים, מסלולים ושנים.
+     */
     List<CourseRequirement> loadCourseRequirements() {
         Connection connection = DatabaseConnection.getConnection();
         List<CourseRequirement> requirements = new ArrayList<>();
@@ -126,6 +144,9 @@ final class DatabaseCatalogReader {
         return requirements;
     }
 
+    /**
+     * טוען את רשימת האילוצים והמשקלים שהאלגוריתם משתמש בהם.
+     */
     Map<String, ConstraintRule> loadConstraints() {
         Connection connection = DatabaseConnection.getConnection();
         Map<String, ConstraintRule> constraints = new LinkedHashMap<>();
@@ -134,6 +155,7 @@ final class DatabaseCatalogReader {
              ResultSet resultSet = statement.executeQuery(
                      "SELECT ConstraintName, Description, ConstraintType, Weight FROM [Constraints]")) {
             while (resultSet.next()) {
+                // נשמר לפי שם האילוץ כדי לאפשר גישה ישירה לפי מפתח.
                 ConstraintRule rule = new ConstraintRule(
                         resultSet.getString("ConstraintName"),
                         resultSet.getString("Description"),
@@ -149,6 +171,9 @@ final class DatabaseCatalogReader {
         return constraints;
     }
 
+    /**
+     * טוען העדפות קורסים לכל סטודנט ומקבץ אותן לפי מזהה סטודנט.
+     */
     private Map<Integer, List<CoursePreference>> loadPreferencesByStudent(Connection connection) {
         Map<Integer, List<CoursePreference>> preferencesByStudent = new HashMap<>();
 
@@ -156,6 +181,7 @@ final class DatabaseCatalogReader {
              ResultSet resultSet = statement.executeQuery(
                      "SELECT StudentID, CourseID, PreferenceRank FROM StudentCoursePreferences ORDER BY StudentID, PreferenceRank")) {
             while (resultSet.next()) {
+                // הקיבוץ לפי StudentID מייצר רשימת העדפות מסודרת לכל סטודנט.
                 preferencesByStudent.computeIfAbsent(resultSet.getInt("StudentID"), ignored -> new ArrayList<>())
                         .add(new CoursePreference(resultSet.getInt("CourseID"), resultSet.getInt("PreferenceRank")));
             }
@@ -166,10 +192,14 @@ final class DatabaseCatalogReader {
         return preferencesByStudent;
     }
 
+    /**
+     * שומר על פורמט זמן אחיד במעבר מהמסד למודל.
+     */
     private String formatTime(Time time) {
         if (time == null) {
             return "";
         }
+        // מאחד את ייצוגי הזמן למסך ולמודלים בפורמט HH:mm.
         return time.toLocalTime().format(TIME_FORMATTER);
     }
 }

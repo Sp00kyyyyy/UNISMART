@@ -2,6 +2,10 @@ package com.example.java_main_proj.model;
 
 import java.time.LocalTime;
 
+/**
+ * מודל קורס כפי שהוא נדרש לתהליך השיבוץ:
+ * זיהוי, פרטי זמן, קיבולת ונתוני תצוגה.
+ */
 public class Course {
     private int courseID;
     private String courseName;
@@ -132,6 +136,9 @@ public class Course {
         return LocalTime.parse(endTime);
     }
 
+    /**
+     * בודק האם שני קורסים מתנגשים בזמן באותו יום.
+     */
     public boolean overlapsWith(Course other) {
         if (other == null || day == null || !day.equals(other.day)) {
             return false;

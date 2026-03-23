@@ -15,6 +15,10 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
+/**
+ * בקר מסך התוצאות.
+ * מציג את פלט ריצות השיבוץ ומרכז נתונים סטטיסטיים לסיכום מצב ההרשמות.
+ */
 public class ResultsController {
     private static final String FULL_STATUS = "הצלחה מלאה";
     private static final String PARTIAL_STATUS = "שיבוץ חלקי";
@@ -40,12 +44,17 @@ public class ResultsController {
 
     @FXML
     public void initialize() {
+        // מאתחל את מבנה הטבלה, המסננים והנתונים ההתחלתיים.
         setupTable();
         setupFilters();
         refreshResults();
     }
 
+    /**
+     * מגדיר את עמודות הטבלה ואת הצביעה של עמודת הסטטוס.
+     */
     private void setupTable() {
+        // מחבר בין עמודות הטבלה לשדות של מודל התוצאה.
         studentIdCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
         studentNameCol.setCellValueFactory(new PropertyValueFactory<>("studentName"));
         yearCol.setCellValueFactory(new PropertyValueFactory<>("year"));
@@ -59,12 +68,14 @@ public class ResultsController {
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty || item == null) {
+                    // איפוס תא ריק מונע זליגת טקסט ועיצוב בין שורות.
                     setText(null);
                     setStyle("");
                     return;
                 }
 
                 setText(item);
+                // צבע שונה לכל סטטוס משפר קריאות מיידית של מצב השיבוץ.
                 if (item.equals(FULL_STATUS)) {
                     setStyle("-fx-text-fill: #388E3C; -fx-font-weight: bold;");
                 } else if (item.equals(PARTIAL_STATUS)) {
@@ -78,7 +89,11 @@ public class ResultsController {
         });
     }
 
+    /**
+     * טוען אפשרויות סינון ומחבר אותן לרענון אוטומטי של המסך.
+     */
     private void setupFilters() {
+        // טוען את הערכים האפשריים לפילטרים מתוך הרצות קיימות במסד.
         yearFilterCombo.getItems().setAll(repository.loadAcademicYearsWithResults());
         semesterFilterCombo.getItems().setAll(repository.loadSemestersWithResults());
         if (!yearFilterCombo.getItems().isEmpty()) {
@@ -88,13 +103,19 @@ public class ResultsController {
             semesterFilterCombo.setValue(semesterFilterCombo.getItems().get(0));
         }
 
+        // כל שינוי בפילטרים מפעיל רענון אוטומטי של הדוח.
         yearFilterCombo.setOnAction(event -> refreshResults());
         semesterFilterCombo.setOnAction(event -> refreshResults());
     }
 
+    /**
+     * מחשב נתוני סיכום שמוצגים מעל הטבלה.
+     */
     private void updateStatistics() {
+        // מספר הסטודנטים שמוצגים כרגע בטבלה.
         totalStudentsLabel.setText(String.valueOf(allResults.size()));
 
+        // סיכום של הצלחה מלאה וחלקית מתוך הרשימה הנוכחית.
         long success = allResults.stream().filter(result -> result.getStatus().equals(FULL_STATUS)).count();
         long partial = allResults.stream().filter(result -> result.getStatus().equals(PARTIAL_STATUS)).count();
 
@@ -109,6 +130,7 @@ public class ResultsController {
 
     @FXML
     private void clearFilter() {
+        // איפוס מסננים מנקה גם את תוצאות הטבלה.
         yearFilterCombo.setValue(null);
         semesterFilterCombo.setValue(null);
         allResults.clear();
@@ -119,14 +141,19 @@ public class ResultsController {
 
     @FXML
     private void closeWindow() {
+        // סוגר את חלון התוצאות בלבד.
         Stage stage = (Stage) resultsTable.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * טוען את התוצאות הרלוונטיות למסננים הנוכחיים.
+     */
     private void refreshResults() {
         String academicYear = yearFilterCombo.getValue();
         String semester = semesterFilterCombo.getValue();
         if (academicYear == null || semester == null) {
+            // בלי מסננים מלאים אין הרצה מוגדרת להצגה.
             allResults.clear();
             resultsTable.setItems(allResults);
             updateStatistics();
@@ -134,6 +161,7 @@ public class ResultsController {
             return;
         }
 
+        // טוען את התוצאות המעובדות ומציג אותן בטבלה.
         List<EnrollmentResult> results = repository.loadEnrollmentResults(academicYear, semester);
         allResults.setAll(results);
         resultsTable.setItems(allResults);

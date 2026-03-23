@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * בקר מסך הסטודנטים.
+ * אחראי לטעון את הנתונים, להציגם בטבלה ולאפשר חיפוש מקומי מהיר.
+ */
 public class StudentController {
 
     @FXML private TextField searchField;
@@ -34,11 +38,17 @@ public class StudentController {
 
     @FXML
     public void initialize() {
+        // בונה את עמודות הטבלה לפני טעינת הנתונים.
         setupTableColumns();
+        // לאחר מכן טוען את רשימת הסטודנטים למסך.
         loadStudents();
     }
 
+    /**
+     * קושר בין עמודות ה-TableView לבין שדות המודל.
+     */
     private void setupTableColumns() {
+        // כל עמודה משויכת לשדה מתאים מתוך אובייקט Student.
         idColumn.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getStudentID()).asObject());
         nameColumn.setCellValueFactory(cellData ->
@@ -57,12 +67,18 @@ public class StudentController {
                 new javafx.beans.property.SimpleDoubleProperty(cellData.getValue().getGpa()).asObject());
     }
 
+    /**
+     * טוען מחדש את רשימת הסטודנטים מהמסד ומעדכן את הטבלה.
+     */
     private void loadStudents() {
+        // מנקה טעינה קודמת כדי למנוע כפילויות בתצוגה.
         studentsList.clear();
 
         try {
+            // שולף את רשימת הסטודנטים המלאה משכבת הנתונים.
             List<Student> students = repository.loadStudents();
             studentsList.addAll(students);
+            // הטבלה מציגה את הרשימה הראשית שממנה גם ייגזר חיפוש מקומי.
             studentsTable.setItems(studentsList);
             statusLabel.setText("נטענו " + students.size() + " סטודנטים.");
         } catch (Exception exception) {
@@ -71,16 +87,22 @@ public class StudentController {
         }
     }
 
+    /**
+     * מסנן את הטבלה לפי שם או תעודת זהות על בסיס הרשימה שכבר נטענה לזיכרון.
+     */
     @FXML
     private void searchStudent() {
+        // מנרמל את טקסט החיפוש כדי לבצע התאמה פשוטה ולא רגישה לרישיות.
         String searchTerm = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
         if (searchTerm.isBlank()) {
+            // כאשר אין ביטוי חיפוש, חוזרים לתצוגה מלאה.
             studentsTable.setItems(studentsList);
             statusLabel.setText("הוצגו כל הסטודנטים.");
             return;
         }
 
         ObservableList<Student> filtered = FXCollections.observableArrayList(
+                // הסינון מתבצע בזיכרון המקומי ולכן אינו דורש גישה נוספת למסד.
                 studentsList.stream()
                         .filter(student -> student.getFullName().toLowerCase(Locale.ROOT).contains(searchTerm) ||
                                 student.getIdNumber().toLowerCase(Locale.ROOT).contains(searchTerm))
@@ -92,12 +114,14 @@ public class StudentController {
 
     @FXML
     private void refreshTable() {
+        // מבצע טעינה מחודשת מהמסד כדי להציג נתונים עדכניים.
         loadStudents();
         statusLabel.setText("רשימת הסטודנטים רועננה.");
     }
 
     @FXML
     private void closeWindow() {
+        // סוגר רק את חלון הסטודנטים.
         Stage stage = (Stage) studentsTable.getScene().getWindow();
         stage.close();
     }

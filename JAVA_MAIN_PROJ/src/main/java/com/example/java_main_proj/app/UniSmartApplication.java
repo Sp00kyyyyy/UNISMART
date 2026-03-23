@@ -8,6 +8,10 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * מחלקת הכניסה של יישום JavaFX.
+ * אחריותה לטעון את מסך הבית וליצור את החלון הראשי של המערכת.
+ */
 public class UniSmartApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {

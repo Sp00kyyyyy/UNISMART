@@ -3,6 +3,11 @@ package com.example.java_main_proj.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * מודל הסטודנט.
+ * מכיל גם נתוני זיהוי וגם נתונים שמשפיעים על החלטות האלגוריתם,
+ * כמו קדימות, ותק, ממוצע והעדפות.
+ */
 public class Student {
     private int studentID;
     private String fullName;
@@ -128,6 +133,9 @@ public class Student {
         this.preferences = new ArrayList<>(preferences);
     }
 
+    /**
+     * בודק האם יום מסוים נמצא ברשימת הימים המועדפים של הסטודנט.
+     */
     public boolean prefersDay(String day) {
         if (preferredDays == null || preferredDays.isBlank()) {
             return false;
@@ -141,6 +149,9 @@ public class Student {
         return false;
     }
 
+    /**
+     * בודק האם שעת ההתחלה של הקורס מתאימה להעדפת הזמן של הסטודנט.
+     */
     public boolean prefersCourseTime(Course course) {
         if (timePreference == null || timePreference.isBlank()) {
             return true;

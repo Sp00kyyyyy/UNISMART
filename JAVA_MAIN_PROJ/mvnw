@@ -177,13 +177,14 @@ find_maven_basedir() {
 
   basedir="$1"
   wdir="$1"
-  while [ "$wdir" != '/' ] ; do
+  found_basedir=false
+  while [ "$wdir" != '/' ] && [ "$found_basedir" = false ] ; do
     if [ -d "$wdir"/.mvn ] ; then
       basedir=$wdir
-      break
+      found_basedir=true
     fi
     # workaround for JBEAP-8937 (on Solaris 10/Sparc)
-    if [ -d "${wdir}" ]; then
+    if [ "$found_basedir" = false ] && [ -d "${wdir}" ]; then
       wdir=`cd "$wdir/.."; pwd`
     fi
     # end of workaround
@@ -220,8 +221,9 @@ else
     else
       jarUrl="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar"
     fi
-    while IFS="=" read key value; do
-      case "$key" in (wrapperUrl) jarUrl="$value"; break ;;
+    wrapperUrlFound=false
+    while IFS="=" read key value && [ "$wrapperUrlFound" = false ]; do
+      case "$key" in (wrapperUrl) jarUrl="$value"; wrapperUrlFound=true ;;
       esac
     done < "$BASE_DIR/.mvn/wrapper/maven-wrapper.properties"
     if [ "$MVNW_VERBOSE" = true ]; then

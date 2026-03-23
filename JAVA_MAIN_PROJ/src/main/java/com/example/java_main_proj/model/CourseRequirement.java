@@ -1,5 +1,8 @@
 package com.example.java_main_proj.model;
 
+/**
+ * כלל שמגדיר האם קורס הוא חובה עבור מסלול ושנה מסוימים.
+ */
 public class CourseRequirement {
     private final int courseId;
     private final String track;

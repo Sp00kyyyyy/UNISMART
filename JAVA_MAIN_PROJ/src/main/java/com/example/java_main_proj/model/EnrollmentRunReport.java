@@ -2,6 +2,9 @@ package com.example.java_main_proj.model;
 
 import java.util.List;
 
+/**
+ * אובייקט דוח שמרכז את תוצאות ריצת האלגוריתם למסך ההרצה.
+ */
 public class EnrollmentRunReport {
     private final String academicYear;
     private final String semester;

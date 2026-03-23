@@ -1,5 +1,8 @@
 package com.example.java_main_proj.model;
 
+/**
+ * החלטת שיבוץ בודדת לפני שמירתה למסד הנתונים.
+ */
 public class EnrollmentDecision {
     private final int studentId;
     private final int courseId;

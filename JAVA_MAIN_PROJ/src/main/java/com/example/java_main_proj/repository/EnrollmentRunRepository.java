@@ -14,24 +14,38 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * אחראי על שמירת תוצאות ריצת השיבוץ ועל סנכרון המסד לאחר ההרצה.
+ */
 final class EnrollmentRunRepository {
     private static final String SEMESTER_A = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D0'";
     private static final String SEMESTER_B = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D1'";
 
+    /**
+     * מחליף ריצת שיבוץ קודמת של אותה שנה/סמסטר בתוצאות החדשות.
+     */
     void replaceEnrollmentRun(String academicYear, String semester, List<EnrollmentDecision> decisions) {
+        // כל פעולות ההרצה מתבצעות על אותו חיבור למסד.
         Connection connection = DatabaseConnection.getConnection();
 
+        // קודם מוחקים תוצאות ישנות של אותה שנה/סמסטר כדי לשמור snapshot עדכני אחד.
         clearEnrollmentRun(connection, academicYear, semester);
         if (decisions.isEmpty()) {
+            // גם אם אין שיבוצים, חייבים לאפס את מוני הנרשמים בקורסים.
             synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
             return;
         }
 
+        // מאחר שב-Access אין auto-increment בטבלה הזו, מחשבים ידנית את המזהה הבא.
         int nextEnrollmentId = nextIdentifier(connection, "Enrollment", "EnrollmentID");
+        // שומרים את כל החלטות השיבוץ ואז מסנכרנים את מוני הקורסים.
         saveEnrollmentDecisions(connection, decisions, nextEnrollmentId);
         synchronizeCourseEnrollmentCounts(connection, academicYear, semester);
     }
 
+    /**
+     * טוען את שנות הלימוד שקיימות עבורן תוצאות שמורות.
+     */
     List<String> loadAcademicYearsWithResults() {
         Connection connection = DatabaseConnection.getConnection();
         Set<String> values = new TreeSet<>(java.util.Comparator.reverseOrder());
@@ -56,10 +70,16 @@ final class EnrollmentRunRepository {
         return List.copyOf(values);
     }
 
+    /**
+     * הסמסטרים במערכת קבועים ולכן מוחזרים כערכים ידועים.
+     */
     List<String> loadSemestersWithResults() {
         return List.of(SEMESTER_A, SEMESTER_B);
     }
 
+    /**
+     * מוחק תוצאות ישנות של אותה ריצה לפני שמירת התוצאות החדשות.
+     */
     private void clearEnrollmentRun(Connection connection, String academicYear, String semester) {
         try (PreparedStatement deleteStatement = connection.prepareStatement(
                 "DELETE FROM Enrollment WHERE AcademicYear = ? AND Semester = ?")) {
@@ -71,12 +91,16 @@ final class EnrollmentRunRepository {
         }
     }
 
+    /**
+     * שומר את החלטות השיבוץ בטבלת Enrollment באמצעות batch insert.
+     */
     private void saveEnrollmentDecisions(Connection connection, List<EnrollmentDecision> decisions, int nextEnrollmentId) {
         try (PreparedStatement insertStatement = connection.prepareStatement(
                 "INSERT INTO Enrollment " +
                         "(EnrollmentID, StudentID, CourseID, EnrollmentDate, Status, AcademicYear, Semester, AssignmentScore, RequestedRank, IsMandatory) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             for (EnrollmentDecision decision : decisions) {
+                // כל החלטה הופכת לשורה בטבלת Enrollment.
                 insertStatement.setInt(1, nextEnrollmentId++);
                 insertStatement.setInt(2, decision.getStudentId());
                 insertStatement.setInt(3, decision.getCourseId());
@@ -89,16 +113,21 @@ final class EnrollmentRunRepository {
                 insertStatement.setBoolean(10, decision.isMandatory());
                 insertStatement.addBatch();
             }
+            // batch insert יעיל יותר מהכנסה של שורה-שורה.
             insertStatement.executeBatch();
         } catch (SQLException exception) {
             throw new IllegalStateException("Failed to save enrollment decisions", exception);
         }
     }
 
+    /**
+     * מחשב מזהה חדש עבור טבלאות שבהן אין auto increment.
+     */
     private int nextIdentifier(Connection connection, String tableName, String columnName) {
         try (Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery("SELECT MAX(" + columnName + ") FROM " + tableName)) {
             if (resultSet.next()) {
+                // אם כבר קיימות שורות בטבלה, המזהה הבא הוא מקסימום קיים ועוד אחד.
                 return resultSet.getInt(1) + 1;
             }
         } catch (SQLException exception) {
@@ -107,7 +136,11 @@ final class EnrollmentRunRepository {
         return 1;
     }
 
+    /**
+     * מסנכרן את מספר הנרשמים בכל קורס בהתאם לתוצאות הריצה האחרונה.
+     */
     private void synchronizeCourseEnrollmentCounts(Connection connection, String academicYear, String semester) {
+        // תחילה מחשבים כמה סטודנטים שובצו לכל קורס בהרצה הנוכחית.
         Map<Integer, Integer> enrollmentCountsByCourse = new HashMap<>();
 
         try (PreparedStatement countStatement = connection.prepareStatement(
@@ -130,10 +163,12 @@ final class EnrollmentRunRepository {
                 "UPDATE Courses SET EnrolledStudents = 0 WHERE Semester = ?");
              PreparedStatement updateStatement = connection.prepareStatement(
                      "UPDATE Courses SET EnrolledStudents = ? WHERE CourseID = ?")) {
+            // מאפסים את כל הקורסים של אותו סמסטר לפני כתיבת הספירות החדשות.
             resetStatement.setString(1, semester);
             resetStatement.executeUpdate();
 
             for (Map.Entry<Integer, Integer> entry : enrollmentCountsByCourse.entrySet()) {
+                // מעדכנים רק קורסים שבפועל קיבלו שיבוצים.
                 updateStatement.setInt(1, entry.getValue());
                 updateStatement.setInt(2, entry.getKey());
                 updateStatement.addBatch();

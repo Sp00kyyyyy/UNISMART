@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/**
+ * בקר מסך הקורסים.
+ * מציג את רשימת הקורסים ומאפשר חיפוש לפי שם קורס או מרצה.
+ */
 public class CourseController {
 
     @FXML private TextField searchField;
@@ -35,11 +39,17 @@ public class CourseController {
 
     @FXML
     public void initialize() {
+        // מגדיר את מבנה הטבלה לפני טעינת הנתונים.
         setupTableColumns();
+        // אחר כך טוען את הקורסים מהמסד.
         loadCourses();
     }
 
+    /**
+     * קישור עמודות הטבלה לשדות קורס.
+     */
     private void setupTableColumns() {
+        // כל עמודה משויכת לשדה מתאים במודל Course.
         idColumn.setCellValueFactory(cellData ->
                 new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getCourseID()).asObject());
         nameColumn.setCellValueFactory(cellData ->
@@ -60,10 +70,15 @@ public class CourseController {
                 new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getEnrolledStudents()).asObject());
     }
 
+    /**
+     * טוען את הקורסים מהמסד ומרענן את הטבלה.
+     */
     private void loadCourses() {
+        // מנקה את הרשימה המקומית לפני רענון.
         coursesList.clear();
 
         try {
+            // null אומר לשכבת הנתונים להחזיר את כל הקורסים.
             List<Course> courses = repository.loadCourses(null);
             coursesList.addAll(courses);
             coursesTable.setItems(coursesList);
@@ -74,8 +89,12 @@ public class CourseController {
         }
     }
 
+    /**
+     * חיפוש מקומי ברשימת הקורסים שכבר נטענה.
+     */
     @FXML
     private void searchCourse() {
+        // מנרמל את טקסט החיפוש לשימוש אחיד.
         String searchTerm = searchField.getText() == null ? "" : searchField.getText().trim().toLowerCase(Locale.ROOT);
         if (searchTerm.isBlank()) {
             coursesTable.setItems(coursesList);
@@ -84,6 +103,7 @@ public class CourseController {
         }
 
         ObservableList<Course> filtered = FXCollections.observableArrayList(
+                // ההתאמה נעשית לפי שם קורס או שם מרצה על הרשימה שכבר נטענה.
                 coursesList.stream()
                         .filter(course -> course.getCourseName().toLowerCase(Locale.ROOT).contains(searchTerm) ||
                                 course.getLecturer().toLowerCase(Locale.ROOT).contains(searchTerm))
@@ -95,12 +115,14 @@ public class CourseController {
 
     @FXML
     private void refreshTable() {
+        // רענון אמיתי מהמסד ולא רק שחזור של הרשימה הקיימת.
         loadCourses();
         statusLabel.setText("רשימת הקורסים רועננה.");
     }
 
     @FXML
     private void closeWindow() {
+        // סוגר את חלון הקורסים.
         Stage stage = (Stage) coursesTable.getScene().getWindow();
         stage.close();
     }

@@ -1,5 +1,8 @@
 package com.example.java_main_proj.model;
 
+/**
+ * שורת תוצאה לתצוגה במסך התוצאות לאחר ריצת שיבוץ.
+ */
 public class EnrollmentResult {
     private String studentId;
     private String studentName;

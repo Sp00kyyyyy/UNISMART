@@ -14,12 +14,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * שכבת ההכנה הלוגית של האלגוריתם.
+ * המחלקה מתרגמת את נתוני המסד לבקשות מדורגות ולמדדי עדיפות.
+ */
+// המחלקה הזו מכינה את כל המידע שהאלגוריתם צריך לפני השיבוץ עצמו.
 public final class SchedulePlanningService {
+    /**
+     * בונה עבור כל סטודנט את קבוצת קורסי החובה הרלוונטיים לו לפי מסלול ושנה.
+     */
+    // כאן בונים לכל סטודנט את קורסי החובה שלו.
     public Map<Integer, Set<Integer>> buildMandatoryCoursesByStudent(
             List<Student> students,
             List<CourseRequirement> requirements,
             Map<Integer, Course> coursesById
     ) {
+        // מקבץ פעם אחת את קורסי החובה לפי צירוף של מסלול ושנה כדי לא לחשב זאת מחדש לכל סטודנט.
         Map<TrackYearKey, Set<Integer>> mandatoryCoursesByTrackYear = requirements.stream()
                 .filter(CourseRequirement::isMandatory)
                 .filter(requirement -> coursesById.containsKey(requirement.getCourseId()))
@@ -27,9 +37,11 @@ public final class SchedulePlanningService {
                         requirement -> new TrackYearKey(requirement.getTrack(), requirement.getYear()),
                         Collectors.mapping(CourseRequirement::getCourseId, Collectors.toSet())
                 ));
+        // התוצאה הסופית: מיפוי ישיר מכל סטודנט לקבוצת קורסי החובה שלו.
         Map<Integer, Set<Integer>> mandatoryCoursesByStudent = new HashMap<>();
 
         for (Student student : students) {
+            // אם אין התאמה למסלול ולשנה, הסטודנט מקבל קבוצה ריקה במקום null.
             mandatoryCoursesByStudent.put(
                     student.getStudentID(),
                     mandatoryCoursesByTrackYear.getOrDefault(new TrackYearKey(student.getTrack(), student.getYear()), Set.of())
@@ -39,25 +51,33 @@ public final class SchedulePlanningService {
         return mandatoryCoursesByStudent;
     }
 
+    /**
+     * מאחד העדפות אישיות וקורסי חובה לרשימת בקשות אחת לכל סטודנט.
+     */
+    // כאן בונים את רשימת הבקשות של כל סטודנט, כולל קורסי חובה.
     public Map<Integer, StudentRequests> buildRequestsByStudent(
             List<Student> students,
             Map<Integer, Course> coursesById,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
             Map<String, ConstraintRule> constraints
     ) {
+        // טוען את משקלי הניקוד מהמסד, או ערכי ברירת מחדל אם אין כלל מתאים.
         WeightProfile weights = WeightProfile.from(constraints);
         Map<Integer, StudentRequests> requestsByStudent = new HashMap<>();
 
         for (Student student : students) {
+            // LinkedHashMap שומר את סדר ההכנסה, ולכן העדפות המשתמש נשמרות כמו שהוזנו.
             Map<Integer, Integer> rankedCourses = new LinkedHashMap<>();
             Set<Integer> mandatoryCourses = mandatoryCoursesByStudent.getOrDefault(student.getStudentID(), Set.of());
             for (CoursePreference preference : student.getPreferences()) {
+                // שומר רק קורסים שבאמת מוצעים בסמסטר, וללא כפילויות.
                 if (coursesById.containsKey(preference.getCourseId())) {
                     rankedCourses.putIfAbsent(preference.getCourseId(), preference.getPreferenceRank());
                 }
             }
 
             for (Integer mandatoryCourseId : mandatoryCourses) {
+                // אם קורס החובה לא הופיע בהעדפות האישיות, מוסיפים אותו לסוף הרשימה.
                 if (coursesById.containsKey(mandatoryCourseId)) {
                     rankedCourses.putIfAbsent(mandatoryCourseId, rankedCourses.size() + 1);
                 }
@@ -67,43 +87,54 @@ public final class SchedulePlanningService {
             int mandatoryRequestCount = 0;
             for (Map.Entry<Integer, Integer> entry : rankedCourses.entrySet()) {
                 Course course = coursesById.get(entry.getKey());
-                if (course == null) {
-                    continue;
+                if (course != null) {
+                    // מסמן האם הבקשה הזו נחשבת חובה עבור הסטודנט הספציפי.
+                    boolean mandatory = mandatoryCourses.contains(course.getCourseID());
+                    if (mandatory) {
+                        mandatoryRequestCount++;
+                    }
+                    // RequestChoice מרכז במקום אחד את כל הנתונים שהאלגוריתם צריך בזמן אמת.
+                    requests.add(new RequestChoice(
+                            course,
+                            entry.getValue(),
+                            mandatory,
+                            scoreRequest(student, course, entry.getValue(), mandatory, weights),
+                            accessPriority(student, mandatory)
+                    ));
                 }
-
-                boolean mandatory = mandatoryCourses.contains(course.getCourseID());
-                if (mandatory) {
-                    mandatoryRequestCount++;
-                }
-                requests.add(new RequestChoice(
-                        course,
-                        entry.getValue(),
-                        mandatory,
-                        scoreRequest(student, course, entry.getValue(), mandatory, weights),
-                        accessPriority(student, mandatory)
-                ));
             }
 
+            // סדר הבקשות קובע את אופן הסריקה של הגרידי ושל החיפוש המקומי.
             requests.sort(Comparator
                     .comparing(RequestChoice::mandatory).reversed()
                     .thenComparingInt(RequestChoice::rank)
                     .thenComparing(Comparator.comparingDouble(RequestChoice::score).reversed()));
+            // העתקה בלתי ניתנת לשינוי מגנה על הסדר שחושב כאן מפני שינוי חיצוני בהמשך.
             requestsByStudent.put(student.getStudentID(), new StudentRequests(List.copyOf(requests), mandatoryRequestCount));
         }
 
         return requestsByStudent;
     }
 
+    /**
+     * מגדיר את סדר הטיפול בסטודנטים לפני תחילת השיבוץ.
+     */
+    // זה הסדר שבו נטפל בסטודנטים בזמן השיבוץ.
     public Comparator<Student> studentComparator(
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
             Map<Integer, StudentRequests> requestsByStudent
     ) {
         return Comparator
+                // קודם מטפלים בסטודנטים שיש להם יותר קורסי חובה פתוחים לטיפול.
                 .comparingInt((Student student) -> pendingMandatoryCount(student, mandatoryCoursesByStudent, requestsByStudent))
                 .reversed()
+                // אחר כך רמת העדיפות המנהלית.
                 .thenComparingInt(Student::getPriorityLevel)
+                // סטודנטים ותיקים יותר מקבלים קדימות.
                 .thenComparing(Comparator.comparingInt(Student::getSeniority).reversed())
+                // ממוצע גבוה עוזר לשבור שוויון.
                 .thenComparing(Comparator.comparingDouble(Student::getGpa).reversed())
+                // לבסוף מזהה הסטודנט נותן סדר דטרמיניסטי קבוע.
                 .thenComparingInt(Student::getStudentID);
     }
 
@@ -116,9 +147,14 @@ public final class SchedulePlanningService {
         if (mandatory.isEmpty()) {
             return 0;
         }
+        // בפועל נספרות רק בקשות החובה שנכנסו לרשימת הבקשות החוקיות של הסטודנט.
         return requestsByStudent.getOrDefault(student.getStudentID(), StudentRequests.EMPTY).mandatoryRequestCount();
     }
 
+    /**
+     * ציון האיכות של בקשה מסוימת לפי העדפות, חובה ונתוני הסטודנט.
+     */
+    // זה ציון "כמה הבקשה טובה" לסטודנט.
     private double scoreRequest(
             Student student,
             Course course,
@@ -126,37 +162,53 @@ public final class SchedulePlanningService {
             boolean mandatory,
             WeightProfile weights
     ) {
+        // הופך דירוג נמוך (למשל 1) לציון גבוה יותר כך שהעדפה ראשונה תקבל יותר ניקוד.
         int invertedRank = Math.max(1, 6 - preferenceRank);
+        // זהו ציון האיכות הכולל של הבקשה, שמשמש בבחירת מהלכי שיפור.
         double score = invertedRank * weights.coursePreferenceWeight();
+        // התאמה ליום מועדף מוסיפה ניקוד.
         if (student.prefersDay(course.getDay())) {
             score += weights.dayWeight();
         }
+        // התאמה לשעת לימוד מועדפת מוסיפה ניקוד נוסף.
         if (student.prefersCourseTime(course)) {
             score += weights.timeWeight();
         }
+        // קורס חובה מקבל בונוס משמעותי כדי שלא יידחק בקלות.
         if (mandatory) {
             score += weights.mandatoryWeight();
         }
 
+        // נתוני הסטודנט עצמם מוסיפים עוד שכבה של עדיפות.
         score += Math.max(0, 5 - student.getPriorityLevel()) * 6.0;
         score += student.getSeniority() * 2.0;
         score += student.getGpa();
         return score;
     }
 
+    /**
+     * עדיפות גישה משמשת להכרעת תחרות על מקום בקורס.
+     */
+    // זה ציון "מי קודם" כששני סטודנטים מתחרים על מקום.
     private double accessPriority(Student student, boolean mandatory) {
+        // accessPriority נועד להכריע תחרות על מושב, ולכן הוא "חד" יותר מה-score הכללי.
         double score = (4 - student.getPriorityLevel()) * 100.0;
         score += student.getSeniority() * 10.0;
         score += student.getGpa() * 5.0;
         if (mandatory) {
+            // תוספת זו גורמת לכך שבקשות חובה יגברו לעיתים קרובות על בקשות רשות.
             score += 75.0;
         }
         return score;
     }
 
     public record WeightProfile(int coursePreferenceWeight, int dayWeight, int timeWeight, int mandatoryWeight) {
+        /**
+         * טוען משקלים מהמסד, עם ערכי ברירת מחדל כאשר אין כלל מתאים.
+         */
         private static WeightProfile from(Map<String, ConstraintRule> constraints) {
             return new WeightProfile(
+                    // כל אחד מהערכים נטען לפי שם אילוץ קבוע, כדי שיהיה אפשר לכוונן התנהגות בלי לשנות קוד.
                     constraintWeight(constraints, "COURSE_PREFERENCE_RANK", 24),
                     constraintWeight(constraints, "PREFERRED_DAYS", 14),
                     constraintWeight(constraints, "TIME_PREFERENCE", 18),
@@ -164,15 +216,24 @@ public final class SchedulePlanningService {
             );
         }
 
+        /**
+         * מאפשר לשנות את משקל האילוץ דרך מסד הנתונים בלי לשנות קוד.
+         */
         private static int constraintWeight(Map<String, ConstraintRule> constraints, String name, int defaultValue) {
             ConstraintRule rule = constraints.get(name);
             return rule == null ? defaultValue : rule.getWeight();
         }
     }
 
+    /**
+     * מפתח לוגי עבור מסלול+שנה.
+     */
     public record TrackYearKey(String track, int year) {
     }
 
+    /**
+     * מעטפת לבקשות של סטודנט יחד עם מידע עזר על בקשות חובה.
+     */
     public record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
         static final StudentRequests EMPTY = new StudentRequests(List.of(), 0);
 
@@ -181,6 +242,9 @@ public final class SchedulePlanningService {
         }
     }
 
+    /**
+     * אובייקט מעבר פנימי שמייצג קורס מבוקש יחד עם כל המידע שהאלגוריתם צריך.
+     */
     public record RequestChoice(Course course, int rank, boolean mandatory, double score, double accessPriority) {
     }
 }

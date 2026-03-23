@@ -9,6 +9,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
+/**
+ * הבקר של המסך הראשי.
+ * תפקידו לנווט בין מסכי המערכת ולהציג סטטוס בסיסי של חיבור למסד.
+ */
 public class MainDashboardController {
 
     @FXML
@@ -16,10 +20,15 @@ public class MainDashboardController {
 
     @FXML
     public void initialize() {
+        // בפתיחת המסך הראשי בודקים מיד אם מסד הנתונים זמין.
         checkDatabaseConnection();
     }
 
+    /**
+     * מעדכן במסך הראשי האם מסד הנתונים זמין כרגע.
+     */
     private void checkDatabaseConnection() {
+        // מעדכן את תווית הסטטוס הראשית לפי מצב החיבור למסד.
         if (DatabaseConnection.testConnection()) {
             statusLabel.setText("מצב: מחובר למסד הנתונים");
             statusLabel.setStyle("-fx-text-fill: green; -fx-font-size: 14px;");
@@ -32,9 +41,11 @@ public class MainDashboardController {
     @FXML
     private void showStudents() {
         try {
+            // טוען את מסך הסטודנטים מתוך קובץ ה-FXML המתאים.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/java_main_proj/student-view.fxml"));
             Parent root = loader.load();
 
+            // פותח חלון חדש כדי לא להחליף את הדשבורד הראשי.
             Stage stage = new Stage();
             stage.setTitle("ניהול סטודנטים");
             stage.setScene(new Scene(root));
@@ -48,6 +59,7 @@ public class MainDashboardController {
     @FXML
     private void showCourses() {
         try {
+            // טוען את מסך הקורסים ומציג אותו בחלון נפרד.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/java_main_proj/course-view.fxml"));
             Parent root = loader.load();
 
@@ -64,6 +76,7 @@ public class MainDashboardController {
     @FXML
     private void showEnrollment() {
         try {
+            // מסך זה מיועד להפעלת האלגוריתם בפועל.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/java_main_proj/enrollment-view.fxml"));
             Parent root = loader.load();
 
@@ -80,6 +93,7 @@ public class MainDashboardController {
     @FXML
     private void showResults() {
         try {
+            // מסך התוצאות מציג את פלט ההרצות שכבר נשמר במסד.
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/java_main_proj/results-view.fxml"));
             Parent root = loader.load();
 
@@ -103,10 +117,14 @@ public class MainDashboardController {
 
     @FXML
     private void handleExit() {
+        // סוגר קודם את החיבור למסד ורק אחר כך מסיים את היישום.
         DatabaseConnection.closeConnection();
         System.exit(0);
     }
 
+    /**
+     * תבנית אחידה להצגת הודעות למשתמש.
+     */
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

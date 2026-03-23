@@ -1,5 +1,8 @@
 package com.example.java_main_proj.model;
 
+/**
+ * העדפת קורס של סטודנט, יחד עם דירוג העדיפות שלה.
+ */
 public class CoursePreference {
     private final int courseId;
     private final int preferenceRank;

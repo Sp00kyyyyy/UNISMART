@@ -1,5 +1,8 @@
 package com.example.java_main_proj.model;
 
+/**
+ * מייצג אילוץ או משקל החלטה כפי שהוגדר במסד הנתונים.
+ */
 public class ConstraintRule {
     private final String name;
     private final String description;
@@ -29,6 +32,9 @@ public class ConstraintRule {
         return weight;
     }
 
+    /**
+     * מאפשר להבחין בין אילוץ קשיח לבין העדפה רכה.
+     */
     public boolean isHardConstraint() {
         return "HARD".equalsIgnoreCase(type);
     }

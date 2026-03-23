@@ -7,11 +7,20 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * מנהל חיבור יחיד למסד הנתונים.
+ * המחלקה גם יודעת לאתר את קובץ Access בכמה נתיבים אפשריים כדי לאפשר הרצה
+ * גם מתוך סביבת פיתוח וגם מתוך חבילה רצה.
+ */
 public class DatabaseConnection {
     private static java.sql.Connection connection;
 
+    /**
+     * מחזיר חיבור פעיל למסד הנתונים, או יוצר אחד חדש אם עדיין לא נפתח חיבור.
+     */
     public static java.sql.Connection getConnection() {
         try {
+            // מאתר קודם את קובץ המסד לפי רשימת נתיבים אפשריים.
             String dbPath = resolveDatabasePath();
             File dbFile = new File(dbPath);
 
@@ -22,6 +31,7 @@ public class DatabaseConnection {
 
             String connectionURL = "jdbc:ucanaccess://" + dbPath + ";memory=false";
             if (connection == null || connection.isClosed()) {
+                // שומר חיבור יחיד שניתן למחזור במקום לפתוח חיבור חדש בכל קריאה.
                 connection = java.sql.DriverManager.getConnection(connectionURL);
             }
         } catch (java.sql.SQLException exception) {
@@ -34,6 +44,9 @@ public class DatabaseConnection {
         return connection;
     }
 
+    /**
+     * סוגר את החיבור המרכזי למסד הנתונים כאשר היישום מסיים לעבוד.
+     */
     public static void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -44,8 +57,12 @@ public class DatabaseConnection {
         }
     }
 
+    /**
+     * בדיקת בריאות מהירה לצורך הצגה בממשק הראשי.
+     */
     public static boolean testConnection() {
         try {
+            // משתמש באותה לוגיקת חיבור של המערכת, אך מחזיר רק תשובת true/false.
             java.sql.Connection currentConnection = getConnection();
             return currentConnection != null && !currentConnection.isClosed();
         } catch (Exception exception) {
@@ -53,15 +70,20 @@ public class DatabaseConnection {
         }
     }
 
+    /**
+     * בונה רשימת נתיבים אפשריים למסד ומחזיר את הנתיב הראשון שקיים בפועל.
+     */
     private static String resolveDatabasePath() {
         List<Path> candidates = new ArrayList<>();
         String propertyPath = System.getProperty("unismart.db.path");
         if (propertyPath != null && !propertyPath.isBlank()) {
+            // מאפשר להכתיב נתיב מפורש דרך property בזמן הרצה.
             candidates.add(Path.of(propertyPath));
         }
 
         String explicitPath = System.getenv("UNISMART_DB_PATH");
         if (explicitPath != null && !explicitPath.isBlank()) {
+            // תומך גם בהגדרת נתיב דרך משתנה סביבה.
             candidates.add(Path.of(explicitPath));
         }
 
@@ -75,12 +97,14 @@ public class DatabaseConnection {
         URL resource = DatabaseConnection.class.getClassLoader().getResource("UniSmartDB1.accdb");
         if (resource != null && "file".equalsIgnoreCase(resource.getProtocol())) {
             try {
+                // אם הקובץ נארז כ-resource, מוסיפים גם את הנתיב הזה לרשימת המועמדים.
                 candidates.add(Path.of(resource.toURI()));
             } catch (URISyntaxException ignored) {
             }
         }
 
         for (Path candidate : candidates) {
+            // מחזיר את הנתיב הראשון שקיים בפועל על הדיסק.
             if (candidate != null && candidate.toFile().exists()) {
                 return candidate.toAbsolutePath().toString();
             }
@@ -91,9 +115,13 @@ public class DatabaseConnection {
                 : candidates.get(0).toAbsolutePath().toString();
     }
 
+    /**
+     * מוסיף מועמדים יחסיים לכל אחת מהתיקיות שמעל תיקיית העבודה הנוכחית.
+     */
     private static void addAncestorCandidates(List<Path> candidates, Path start) {
         Path current = start;
         while (current != null) {
+            // מטפס כלפי מעלה בעץ התיקיות כדי לאפשר הרצה ממיקומי עבודה שונים.
             candidates.add(current.resolve(Path.of("src", "main", "resources", "UniSmartDB1.accdb")));
             candidates.add(current.resolve(Path.of("JAVA_MAIN_PROJ", "src", "main", "resources", "UniSmartDB1.accdb")));
             current = current.getParent();
