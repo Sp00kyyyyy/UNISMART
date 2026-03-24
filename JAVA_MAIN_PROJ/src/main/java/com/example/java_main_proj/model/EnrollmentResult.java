@@ -35,6 +35,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את מזהה התצוגה של הסטודנט.
+     *
      * @return מזהה התצוגה של הסטודנט
      */
     public String getStudentId() {
@@ -51,6 +53,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את שם הסטודנט.
+     *
      * @return שם הסטודנט
      */
     public String getStudentName() {
@@ -67,6 +71,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את שנת הלימוד לתצוגה.
+     *
      * @return שנת הלימוד לתצוגה
      */
     public String getYear() {
@@ -83,6 +89,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את מספר הקורסים שביקש הסטודנט.
+     *
      * @return מספר הקורסים שביקש הסטודנט
      */
     public int getRequestedCourses() {
@@ -99,6 +107,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את מספר הקורסים שאליהם שובץ הסטודנט.
+     *
      * @return מספר הקורסים שאליהם שובץ הסטודנט
      */
     public int getEnrolledCourses() {
@@ -115,6 +125,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את סטטוס השיבוץ של הסטודנט.
+     *
      * @return סטטוס השיבוץ של הסטודנט
      */
     public String getStatus() {
@@ -131,6 +143,8 @@ public class EnrollmentResult {
     }
 
     /**
+     * מחזיר את רשימת הקורסים ששובצו לסטודנט.
+     *
      * @return רשימת הקורסים ששובצו לסטודנט כמחרוזת
      */
     public String getCoursesList() {

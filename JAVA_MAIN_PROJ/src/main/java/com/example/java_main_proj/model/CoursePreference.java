@@ -19,6 +19,8 @@ public class CoursePreference {
     }
 
     /**
+     * מחזיר את מזהה הקורס המועדף.
+     *
      * @return מזהה הקורס המועדף
      */
     public int getCourseId() {
@@ -26,6 +28,8 @@ public class CoursePreference {
     }
 
     /**
+     * מחזיר את דירוג ההעדפה של הקורס.
+     *
      * @return דירוג ההעדפה של הקורס
      */
     public int getPreferenceRank() {

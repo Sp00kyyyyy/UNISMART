@@ -42,6 +42,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את מזהה הסטודנט.
+     *
      * @return מזהה הסטודנט
      */
     public int getStudentId() {
@@ -49,6 +51,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את מזהה הקורס.
+     *
      * @return מזהה הקורס
      */
     public int getCourseId() {
@@ -56,6 +60,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את שנת הלימודים של ההחלטה.
+     *
      * @return שנת הלימודים של ההחלטה
      */
     public String getAcademicYear() {
@@ -63,6 +69,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את הסמסטר של ההחלטה.
+     *
      * @return הסמסטר של ההחלטה
      */
     public String getSemester() {
@@ -70,6 +78,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את ציון השיבוץ של ההחלטה.
+     *
      * @return ציון השיבוץ של ההחלטה
      */
     public double getAssignmentScore() {
@@ -77,6 +87,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר את דירוג ההעדפה המקורי של הבקשה.
+     *
      * @return דירוג ההעדפה המקורי של הבקשה
      */
     public int getRequestedRank() {
@@ -84,6 +96,8 @@ public class EnrollmentDecision {
     }
 
     /**
+     * מחזיר האם מדובר בבקשת חובה.
+     *
      * @return {@code true} אם ההחלטה מתייחסת לבקשת חובה
      */
     public boolean isMandatory() {

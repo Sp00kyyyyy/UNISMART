@@ -14,6 +14,11 @@ import javafx.stage.Stage;
  * תפקידו לנווט בין מסכי המערכת ולהציג סטטוס בסיסי של חיבור למסד.
  */
 public class MainDashboardController {
+    /**
+     * יוצר בקר למסך הבית של המערכת.
+     */
+    public MainDashboardController() {
+    }
 
     @FXML
     private Label statusLabel;

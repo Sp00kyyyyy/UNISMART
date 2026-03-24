@@ -29,6 +29,12 @@ public class EnrollmentController {
     private final HybridEnrollmentService hybridEnrollmentService = new HybridEnrollmentService();
 
     /**
+     * יוצר בקר למסך הרצת השיבוץ.
+     */
+    public EnrollmentController() {
+    }
+
+    /**
      * מאתחל את מסך ההרצה ומגדיר את ערכי ברירת המחדל.
      */
     @FXML
@@ -72,6 +78,8 @@ public class EnrollmentController {
         // Task מריץ את האלגוריתם מחוץ ל-thread של JavaFX.
         Task<EnrollmentRunReport> task = new Task<>() {
             /**
+             * מפעיל את אלגוריתם השיבוץ על גבי ה-thread של המשימה.
+             *
              * מריץ את אלגוריתם השיבוץ על גבי ה-thread של המשימה.
              *
              * @return דוח הריצה שהופק על ידי האלגוריתם

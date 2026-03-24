@@ -56,6 +56,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את שנת הלימודים של ההרצה.
+     *
      * @return שנת הלימודים של ההרצה
      */
     public String getAcademicYear() {
@@ -63,6 +65,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את הסמסטר של ההרצה.
+     *
      * @return הסמסטר של ההרצה
      */
     public String getSemester() {
@@ -70,6 +74,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הסטודנטים שטופלו בהרצה.
+     *
      * @return מספר הסטודנטים שטופלו בהרצה
      */
     public int getStudentsProcessed() {
@@ -77,6 +83,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הבקשות הכולל שנבדק בהרצה.
+     *
      * @return מספר הבקשות הכולל שנבדק בהרצה
      */
     public int getRequestedCourses() {
@@ -84,6 +92,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הקורסים ששובצו בפועל.
+     *
      * @return מספר הקורסים ששובצו בפועל
      */
     public int getAssignedCourses() {
@@ -91,6 +101,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר השיפורים שאושרו בשלב המקומי.
+     *
      * @return מספר השיפורים שאושרו בשלב החיפוש המקומי
      */
     public int getLocalImprovements() {
@@ -98,6 +110,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הסטודנטים עם הצלחה מלאה.
+     *
      * @return מספר הסטודנטים עם הצלחה מלאה
      */
     public int getFullAssignments() {
@@ -105,6 +119,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הסטודנטים עם שיבוץ חלקי.
+     *
      * @return מספר הסטודנטים עם שיבוץ חלקי
      */
     public int getPartialAssignments() {
@@ -112,6 +128,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את מספר הסטודנטים שלא שובצו כלל.
+     *
      * @return מספר הסטודנטים שלא שובצו כלל
      */
     public int getUnassignedStudents() {
@@ -119,6 +137,8 @@ public class EnrollmentRunReport {
     }
 
     /**
+     * מחזיר את שורות הלוג שנאספו במהלך ההרצה.
+     *
      * @return שורות הלוג שנאספו במהלך ההרצה
      */
     public List<String> getLogLines() {

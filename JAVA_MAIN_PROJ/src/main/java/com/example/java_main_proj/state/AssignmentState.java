@@ -45,6 +45,8 @@ public final class AssignmentState {
     /**
      * בודק האם נותר מקום פנוי בקורס מסוים.
      *
+     * מחזיר האם קיים מקום פנוי בקורס הנתון.
+     *
      * @param courseId מזהה הקורס
      * @return {@code true} אם יש מקום פנוי בקורס
      */
@@ -55,6 +57,8 @@ public final class AssignmentState {
 
     /**
      * בודק האם סטודנט כבר שובץ לקורס מסוים.
+     *
+     * מחזיר האם הסטודנט כבר שובץ לקורס הנתון.
      *
      * @param studentId מזהה הסטודנט
      * @param courseId מזהה הקורס
@@ -130,6 +134,8 @@ public final class AssignmentState {
     /**
      * מחזיר את כל שיבוצי הסטודנט ביום מסוים.
      *
+     * מחזיר את רשימת השיבוצים של הסטודנט ביום הנתון.
+     *
      * @param studentId מזהה הסטודנט
      * @param day היום הרצוי
      * @return אוסף השיבוצים של הסטודנט באותו יום
@@ -142,6 +148,8 @@ public final class AssignmentState {
     /**
      * מחזיר את כל המשובצים לקורס מסוים.
      *
+     * מחזיר את כלל המשובצים לקורס הנתון.
+     *
      * @param courseId מזהה הקורס
      * @return אוסף המשובצים בקורס
      */
@@ -153,6 +161,8 @@ public final class AssignmentState {
     /**
      * מחזיר כמה קורסי חובה כבר שובצו לסטודנט.
      *
+     * מחזיר את מספר קורסי החובה שכבר שובצו לסטודנט.
+     *
      * @param studentId מזהה הסטודנט
      * @return מספר קורסי החובה המשובצים
      */
@@ -162,6 +172,8 @@ public final class AssignmentState {
     }
 
     /**
+     * מחזיר את מספר השיבוצים הכולל במצב הריצה.
+     *
      * @return מספר השיבוצים הכולל במצב הריצה הנוכחי
      */
     public int totalAssignments() {
@@ -218,6 +230,8 @@ public final class AssignmentState {
     ) {
         /**
          * קיצור נוח לגישה למידע האם השיבוץ הגיע מדרישת חובה.
+         *
+         * מחזיר האם השיבוץ הנוכחי הגיע מבקשת חובה.
          *
          * @return {@code true} אם הבקשה שסיפקה את השיבוץ היא בקשת חובה
          */

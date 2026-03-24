@@ -25,6 +25,8 @@ public class ConstraintRule {
     }
 
     /**
+     * מחזיר את שם האילוץ.
+     *
      * @return שם האילוץ
      */
     public String getName() {
@@ -32,6 +34,8 @@ public class ConstraintRule {
     }
 
     /**
+     * מחזיר את התיאור המילולי של האילוץ.
+     *
      * @return התיאור המילולי של האילוץ
      */
     public String getDescription() {
@@ -39,6 +43,8 @@ public class ConstraintRule {
     }
 
     /**
+     * מחזיר את סוג האילוץ.
+     *
      * @return סוג האילוץ
      */
     public String getType() {
@@ -46,6 +52,8 @@ public class ConstraintRule {
     }
 
     /**
+     * מחזיר את משקל האילוץ.
+     *
      * @return משקל האילוץ
      */
     public int getWeight() {
@@ -54,6 +62,8 @@ public class ConstraintRule {
 
     /**
      * מאפשר להבחין בין אילוץ קשיח לבין העדפה רכה.
+     *
+     * מחזיר האם סוג האילוץ מוגדר כאילוץ קשיח.
      *
      * @return {@code true} אם סוג האילוץ הוא קשיח
      */

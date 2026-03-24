@@ -16,7 +16,15 @@ public class DatabaseConnection {
     private static java.sql.Connection connection;
 
     /**
+     * מונע יצירה של מופעים למחלקת העזר הסטטית.
+     */
+    private DatabaseConnection() {
+    }
+
+    /**
      * מחזיר חיבור פעיל למסד הנתונים, או יוצר אחד חדש אם עדיין לא נפתח חיבור.
+     *
+     * מחזיר חיבור פעיל למסד הנתונים.
      *
      * @return חיבור פעיל למסד הנתונים, או {@code null} אם החיבור נכשל
      */
@@ -61,6 +69,8 @@ public class DatabaseConnection {
 
     /**
      * בדיקת בריאות מהירה לצורך הצגה בממשק הראשי.
+     *
+     * מחזיר האם ניתן לפתוח חיבור תקין למסד הנתונים.
      *
      * @return {@code true} אם ניתן לפתוח חיבור תקין למסד
      */

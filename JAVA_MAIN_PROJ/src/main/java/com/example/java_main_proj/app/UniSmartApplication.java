@@ -14,6 +14,12 @@ import java.io.IOException;
  */
 public class UniSmartApplication extends Application {
     /**
+     * יוצר את אובייקט היישום הראשי של JavaFX.
+     */
+    public UniSmartApplication() {
+    }
+
+    /**
      * טוען את מסך הבית ומציג את החלון הראשי של היישום.
      *
      * @param stage החלון הראשי ש-JavaFX מספק ליישום

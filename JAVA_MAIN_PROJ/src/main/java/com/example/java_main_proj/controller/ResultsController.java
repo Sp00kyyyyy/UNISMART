@@ -43,6 +43,12 @@ public class ResultsController {
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     /**
+     * יוצר בקר למסך התוצאות.
+     */
+    public ResultsController() {
+    }
+
+    /**
      * מאתחל את מסך התוצאות, את הטבלה ואת המסננים הראשוניים.
      */
     @FXML

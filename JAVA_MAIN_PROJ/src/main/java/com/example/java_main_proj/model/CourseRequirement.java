@@ -25,6 +25,8 @@ public class CourseRequirement {
     }
 
     /**
+     * מחזיר את מזהה הקורס שעליו חל הכלל.
+     *
      * @return מזהה הקורס שעליו חל הכלל
      */
     public int getCourseId() {
@@ -32,6 +34,8 @@ public class CourseRequirement {
     }
 
     /**
+     * מחזיר את המסלול האקדמי של הכלל.
+     *
      * @return המסלול האקדמי שאליו הכלל שייך
      */
     public String getTrack() {
@@ -39,6 +43,8 @@ public class CourseRequirement {
     }
 
     /**
+     * מחזיר את שנת הלימוד של הכלל.
+     *
      * @return שנת הלימוד שעליה חל הכלל
      */
     public int getYear() {
@@ -46,6 +52,8 @@ public class CourseRequirement {
     }
 
     /**
+     * מחזיר האם הקורס מוגדר כקורס חובה.
+     *
      * @return {@code true} אם הקורס הוא קורס חובה
      */
     public boolean isMandatory() {

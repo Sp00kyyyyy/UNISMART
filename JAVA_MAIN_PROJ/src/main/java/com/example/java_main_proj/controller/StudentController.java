@@ -37,6 +37,12 @@ public class StudentController {
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     /**
+     * יוצר בקר למסך הסטודנטים.
+     */
+    public StudentController() {
+    }
+
+    /**
      * מאתחל את טבלת הסטודנטים וטוען את הנתונים הראשוניים למסך.
      */
     @FXML

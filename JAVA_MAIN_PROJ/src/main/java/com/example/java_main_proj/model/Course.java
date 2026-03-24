@@ -71,6 +71,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את מזהה הקורס.
+     *
      * @return מזהה הקורס
      */
     public int getCourseID() {
@@ -87,6 +89,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שם הקורס.
+     *
      * @return שם הקורס
      */
     public String getCourseName() {
@@ -103,6 +107,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את סוג הקורס.
+     *
      * @return סוג הקורס
      */
     public String getCourseType() {
@@ -119,6 +125,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שם המרצה.
+     *
      * @return שם המרצה
      */
     public String getLecturer() {
@@ -135,6 +143,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את יום ההוראה של הקורס.
+     *
      * @return יום ההוראה של הקורס
      */
     public String getDay() {
@@ -151,6 +161,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שעת ההתחלה של הקורס.
+     *
      * @return שעת ההתחלה בפורמט טקסטואלי
      */
     public String getStartTime() {
@@ -167,6 +179,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שעת הסיום של הקורס.
+     *
      * @return שעת הסיום בפורמט טקסטואלי
      */
     public String getEndTime() {
@@ -183,6 +197,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את קיבולת הקורס.
+     *
      * @return קיבולת הקורס
      */
     public int getCapacity() {
@@ -199,6 +215,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את מספר הנרשמים הנוכחי בקורס.
+     *
      * @return מספר הסטודנטים הרשומים כעת
      */
     public int getEnrolledStudents() {
@@ -215,6 +233,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את הסמסטר שבו הקורס מוצע.
+     *
      * @return הסמסטר שבו הקורס מוצע
      */
     public String getSemester() {
@@ -231,6 +251,8 @@ public class Course {
     }
 
     /**
+     * מציין אם נותרו מקומות פנויים בקורס.
+     *
      * @return {@code true} אם נותרו מקומות פנויים בקורס
      */
     public boolean hasAvailableSeats() {
@@ -238,6 +260,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את מספר המקומות הפנויים שנותרו בקורס.
+     *
      * @return מספר המקומות הפנויים שנותרו בקורס
      */
     public int getAvailableSeats() {
@@ -245,6 +269,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שעת ההתחלה כאובייקט זמן.
+     *
      * @return שעת ההתחלה כאובייקט {@link LocalTime}
      */
     public LocalTime getStartLocalTime() {
@@ -252,6 +278,8 @@ public class Course {
     }
 
     /**
+     * מחזיר את שעת הסיום כאובייקט זמן.
+     *
      * @return שעת הסיום כאובייקט {@link LocalTime}
      */
     public LocalTime getEndLocalTime() {
@@ -274,6 +302,8 @@ public class Course {
     }
 
     /**
+     * מחזיר ייצוג טקסטואלי קצר של הקורס.
+     *
      * @return ייצוג טקסטואלי קצר של הקורס לצורכי תצוגה
      */
     @Override

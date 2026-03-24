@@ -38,6 +38,12 @@ public class CourseController {
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
     /**
+     * יוצר בקר למסך הקורסים.
+     */
+    public CourseController() {
+    }
+
+    /**
      * מאתחל את טבלת הקורסים וטוען את הנתונים הראשוניים למסך.
      */
     @FXML

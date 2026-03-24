@@ -53,6 +53,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את המזהה הפנימי של הסטודנט.
+     *
      * @return המזהה הפנימי של הסטודנט
      */
     public int getStudentID() {
@@ -69,6 +71,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את השם המלא של הסטודנט.
+     *
      * @return השם המלא של הסטודנט
      */
     public String getFullName() {
@@ -85,6 +89,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את מספר תעודת הזהות של הסטודנט.
+     *
      * @return מספר תעודת הזהות של הסטודנט
      */
     public String getIdNumber() {
@@ -101,6 +107,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את שנת הלימוד של הסטודנט.
+     *
      * @return שנת הלימוד של הסטודנט
      */
     public int getYear() {
@@ -117,6 +125,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את מסלול הלימודים של הסטודנט.
+     *
      * @return מסלול הלימודים של הסטודנט
      */
     public String getTrack() {
@@ -133,6 +143,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את רמת העדיפות של הסטודנט.
+     *
      * @return רמת העדיפות המנהלית של הסטודנט
      */
     public int getPriorityLevel() {
@@ -149,6 +161,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את הוותק האקדמי של הסטודנט.
+     *
      * @return הוותק האקדמי של הסטודנט
      */
     public int getSeniority() {
@@ -165,6 +179,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את ממוצע הציונים של הסטודנט.
+     *
      * @return ממוצע הציונים של הסטודנט
      */
     public double getGpa() {
@@ -181,6 +197,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את העדפת הזמן של הסטודנט.
+     *
      * @return העדפת הזמן של הסטודנט
      */
     public String getTimePreference() {
@@ -197,6 +215,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את רשימת הימים המועדפים של הסטודנט.
+     *
      * @return רשימת הימים המועדפים של הסטודנט כמחרוזת
      */
     public String getPreferredDays() {
@@ -213,6 +233,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את מגבלת קורסי החובה של הסטודנט.
+     *
      * @return מספר מקסימלי של קורסי חובה שמותר לשבץ לסטודנט
      */
     public int getMaxMandatoryCourses() {
@@ -229,6 +251,8 @@ public class Student {
     }
 
     /**
+     * מחזיר את רשימת העדפות הקורסים של הסטודנט.
+     *
      * @return רשימת העדפות הקורסים של הסטודנט
      */
     public List<CoursePreference> getPreferences() {

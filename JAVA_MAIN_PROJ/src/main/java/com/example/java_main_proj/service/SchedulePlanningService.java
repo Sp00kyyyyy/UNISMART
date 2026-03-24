@@ -20,7 +20,15 @@ import java.util.stream.Collectors;
  */
 public final class SchedulePlanningService {
     /**
+     * יוצר שירות תכנון להכנת בקשות, ציונים וסדרי עדיפות.
+     */
+    public SchedulePlanningService() {
+    }
+
+    /**
      * בונה עבור כל סטודנט את קבוצת קורסי החובה הרלוונטיים לו לפי מסלול ושנה.
+     *
+     * מחזיר מיפוי של קורסי החובה לכל סטודנט.
      *
      * @param students רשימת הסטודנטים
      * @param requirements רשימת חוקי החובה מן המסד
@@ -56,6 +64,8 @@ public final class SchedulePlanningService {
 
     /**
      * מאחד העדפות אישיות וקורסי חובה לרשימת בקשות אחת לכל סטודנט.
+     *
+     * מחזיר מפת בקשות מוכנות לעבודה עבור כל הסטודנטים.
      *
      * @param students רשימת הסטודנטים
      * @param coursesById מפת הקורסים המוצעים לפי מזהה
@@ -127,6 +137,8 @@ public final class SchedulePlanningService {
     /**
      * מגדיר את סדר הטיפול בסטודנטים לפני תחילת השיבוץ.
      *
+     * מחזיר משווה לקביעת סדר הטיפול בסטודנטים.
+     *
      * @param mandatoryCoursesByStudent קורסי החובה לכל סטודנט
      * @param requestsByStudent הבקשות המוכנות של כל סטודנט
      * @return משווה שקובע את סדר הטיפול בסטודנטים
@@ -152,6 +164,8 @@ public final class SchedulePlanningService {
     /**
      * מחשב כמה בקשות חובה פתוחות נשארו לסטודנט.
      *
+     * מחזיר את מספר בקשות החובה שנשארו פתוחות לסטודנט.
+     *
      * @param student הסטודנט הנבדק
      * @param mandatoryCoursesByStudent קורסי החובה לכל סטודנט
      * @param requestsByStudent מפת הבקשות לכל סטודנט
@@ -172,6 +186,8 @@ public final class SchedulePlanningService {
 
     /**
      * ציון האיכות של בקשה מסוימת לפי העדפות, חובה ונתוני הסטודנט.
+     *
+     * מחזיר את ציון האיכות הכולל של הבקשה.
      *
      * @param student הסטודנט שעבורו מחושב הציון
      * @param course הקורס המבוקש
@@ -214,6 +230,8 @@ public final class SchedulePlanningService {
     /**
      * עדיפות גישה משמשת להכרעת תחרות על מקום בקורס.
      *
+     * מחזיר את ציון העדיפות לתחרות על מקום.
+     *
      * @param student הסטודנט המתחרה על מקום בקורס
      * @param mandatory האם הבקשה היא בקשת חובה
      * @return ציון עדיפות לתחרות על מקום
@@ -242,6 +260,8 @@ public final class SchedulePlanningService {
         /**
          * טוען משקלים מהמסד, עם ערכי ברירת מחדל כאשר אין כלל מתאים.
          *
+         * מחזיר פרופיל משקלים מלא לצורך חישוב ציונים.
+         *
          * @param constraints מפת האילוצים שנטענה מן המסד
          * @return פרופיל משקלים מלא לחישוב ציונים
          */
@@ -258,6 +278,8 @@ public final class SchedulePlanningService {
         /**
          * מאפשר לשנות את משקל האילוץ דרך מסד הנתונים בלי לשנות קוד.
          *
+         * מחזיר את משקל האילוץ בפועל.
+         *
          * @param constraints מפת האילוצים שנטענה
          * @param name שם האילוץ המבוקש
          * @param defaultValue ערך ברירת מחדל אם האילוץ לא קיים
@@ -271,17 +293,25 @@ public final class SchedulePlanningService {
 
     /**
      * מפתח לוגי עבור מסלול+שנה.
+     *
+     * @param track מסלול הלימודים
+     * @param year שנת הלימוד
      */
     public record TrackYearKey(String track, int year) {
     }
 
     /**
      * מעטפת לבקשות של סטודנט יחד עם מידע עזר על בקשות חובה.
+     *
+     * @param requests רשימת הבקשות של הסטודנט
+     * @param mandatoryRequestCount מספר בקשות החובה ברשימה
      */
     public record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
         static final StudentRequests EMPTY = new StudentRequests(List.of(), 0);
 
         /**
+         * מחזיר את מספר הבקשות הכולל של הסטודנט.
+         *
          * @return מספר הבקשות הכולל של הסטודנט
          */
         int size() {
@@ -291,6 +321,12 @@ public final class SchedulePlanningService {
 
     /**
      * אובייקט מעבר פנימי שמייצג קורס מבוקש יחד עם כל המידע שהאלגוריתם צריך.
+     *
+     * @param course הקורס המבוקש
+     * @param rank דירוג ההעדפה של הקורס
+     * @param mandatory האם הבקשה היא בקשת חובה
+     * @param score ציון האיכות של הבקשה
+     * @param accessPriority ציון העדיפות לתחרות על מקום
      */
     public record RequestChoice(Course course, int rank, boolean mandatory, double score, double accessPriority) {
     }
