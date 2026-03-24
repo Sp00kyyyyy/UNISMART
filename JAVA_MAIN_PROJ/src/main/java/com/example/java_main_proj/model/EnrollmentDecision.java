@@ -12,6 +12,17 @@ public class EnrollmentDecision {
     private final int requestedRank;
     private final boolean mandatory;
 
+    /**
+     * יוצר החלטת שיבוץ בודדת לשמירה במסד הנתונים.
+     *
+     * @param studentId מזהה הסטודנט
+     * @param courseId מזהה הקורס
+     * @param academicYear שנת הלימודים
+     * @param semester הסמסטר
+     * @param assignmentScore ציון ההחלטה
+     * @param requestedRank דירוג ההעדפה המקורי
+     * @param mandatory האם מדובר בבקשת חובה
+     */
     public EnrollmentDecision(
             int studentId,
             int courseId,
@@ -30,30 +41,51 @@ public class EnrollmentDecision {
         this.mandatory = mandatory;
     }
 
+    /**
+     * @return מזהה הסטודנט
+     */
     public int getStudentId() {
         return studentId;
     }
 
+    /**
+     * @return מזהה הקורס
+     */
     public int getCourseId() {
         return courseId;
     }
 
+    /**
+     * @return שנת הלימודים של ההחלטה
+     */
     public String getAcademicYear() {
         return academicYear;
     }
 
+    /**
+     * @return הסמסטר של ההחלטה
+     */
     public String getSemester() {
         return semester;
     }
 
+    /**
+     * @return ציון השיבוץ של ההחלטה
+     */
     public double getAssignmentScore() {
         return assignmentScore;
     }
 
+    /**
+     * @return דירוג ההעדפה המקורי של הבקשה
+     */
     public int getRequestedRank() {
         return requestedRank;
     }
 
+    /**
+     * @return {@code true} אם ההחלטה מתייחסת לבקשת חובה
+     */
     public boolean isMandatory() {
         return mandatory;
     }

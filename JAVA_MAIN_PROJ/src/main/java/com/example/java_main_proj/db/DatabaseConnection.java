@@ -17,6 +17,8 @@ public class DatabaseConnection {
 
     /**
      * מחזיר חיבור פעיל למסד הנתונים, או יוצר אחד חדש אם עדיין לא נפתח חיבור.
+     *
+     * @return חיבור פעיל למסד הנתונים, או {@code null} אם החיבור נכשל
      */
     public static java.sql.Connection getConnection() {
         try {
@@ -59,6 +61,8 @@ public class DatabaseConnection {
 
     /**
      * בדיקת בריאות מהירה לצורך הצגה בממשק הראשי.
+     *
+     * @return {@code true} אם ניתן לפתוח חיבור תקין למסד
      */
     public static boolean testConnection() {
         try {

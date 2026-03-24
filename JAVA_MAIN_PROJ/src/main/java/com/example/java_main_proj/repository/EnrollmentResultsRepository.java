@@ -30,12 +30,22 @@ final class EnrollmentResultsRepository {
 
     private final DatabaseCatalogReader catalogReader;
 
+    /**
+     * יוצר Repository להצגת תוצאות שמורות.
+     *
+     * @param catalogReader קורא הקטלוג המשמש לקריאת נתוני בסיס
+     */
     EnrollmentResultsRepository(DatabaseCatalogReader catalogReader) {
         this.catalogReader = catalogReader;
     }
 
     /**
      * בונה שורת תוצאה לכל סטודנט שניתן היה לשבץ עבורו קורסים באותו סמסטר.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @param requirements חוקי החובה של המערכת
+     * @return רשימת תוצאות מוכנות להצגה
      */
     List<EnrollmentResult> loadEnrollmentResults(String academicYear, String semester, List<CourseRequirement> requirements) {
         // טוען קודם את הסטודנטים כדי לבנות תוצאה לכל מי שהיה רלוונטי בהרצה.
@@ -79,6 +89,11 @@ final class EnrollmentResultsRepository {
 
     /**
      * מחשב כמה קורסים כל סטודנט ביקש בפועל, כולל קורסי חובה רלוונטיים.
+     *
+     * @param students רשימת הסטודנטים
+     * @param semester הסמסטר הנבדק
+     * @param requirements חוקי החובה של המערכת
+     * @return מפת מספר בקשות לפי מזהה סטודנט
      */
     private Map<Integer, Integer> buildRequestedCountsByStudent(
             Iterable<Student> students,
@@ -123,6 +138,10 @@ final class EnrollmentResultsRepository {
 
     /**
      * טוען מהמסד את שמות הקורסים שאליהם שובץ כל סטודנט.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @return מפת שמות קורסים משובצים לפי סטודנט
      */
     private Map<Integer, List<String>> loadAssignedCourseNamesByStudent(String academicYear, String semester) {
         Connection connection = DatabaseConnection.getConnection();

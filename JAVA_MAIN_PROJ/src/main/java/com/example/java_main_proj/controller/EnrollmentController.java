@@ -28,6 +28,9 @@ public class EnrollmentController {
 
     private final HybridEnrollmentService hybridEnrollmentService = new HybridEnrollmentService();
 
+    /**
+     * מאתחל את מסך ההרצה ומגדיר את ערכי ברירת המחדל.
+     */
     @FXML
     public void initialize() {
         // מכין את תיבות הבחירה כך שהמסך יעלה עם ערכי ברירת מחדל תקינים.
@@ -68,6 +71,11 @@ public class EnrollmentController {
 
         // Task מריץ את האלגוריתם מחוץ ל-thread של JavaFX.
         Task<EnrollmentRunReport> task = new Task<>() {
+            /**
+             * מריץ את אלגוריתם השיבוץ על גבי ה-thread של המשימה.
+             *
+             * @return דוח הריצה שהופק על ידי האלגוריתם
+             */
             @Override
             protected EnrollmentRunReport call() {
                 return hybridEnrollmentService.runEnrollment(academicYear, semester);
@@ -113,6 +121,9 @@ public class EnrollmentController {
         statusLabel.setText("מוכן להרצת שיבוץ.");
     }
 
+    /**
+     * סוגר את חלון הרצת השיבוץ.
+     */
     @FXML
     private void closeWindow() {
         // סוגר רק את חלון ההרצה.
@@ -122,6 +133,9 @@ public class EnrollmentController {
 
     /**
      * מציג שגיאות קלט למשתמש.
+     *
+     * @param title כותרת ההודעה
+     * @param content תוכן ההודעה
      */
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.WARNING);

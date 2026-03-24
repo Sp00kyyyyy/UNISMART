@@ -36,6 +36,9 @@ public class StudentController {
     private final ObservableList<Student> studentsList = FXCollections.observableArrayList();
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
+    /**
+     * מאתחל את טבלת הסטודנטים וטוען את הנתונים הראשוניים למסך.
+     */
     @FXML
     public void initialize() {
         // בונה את עמודות הטבלה לפני טעינת הנתונים.
@@ -112,6 +115,9 @@ public class StudentController {
         statusLabel.setText("נמצאו " + filtered.size() + " סטודנטים.");
     }
 
+    /**
+     * מרענן את הטבלה מנתוני המסד.
+     */
     @FXML
     private void refreshTable() {
         // מבצע טעינה מחודשת מהמסד כדי להציג נתונים עדכניים.
@@ -119,6 +125,9 @@ public class StudentController {
         statusLabel.setText("רשימת הסטודנטים רועננה.");
     }
 
+    /**
+     * סוגר את חלון הסטודנטים.
+     */
     @FXML
     private void closeWindow() {
         // סוגר רק את חלון הסטודנטים.

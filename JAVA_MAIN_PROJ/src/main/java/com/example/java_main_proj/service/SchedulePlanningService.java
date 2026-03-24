@@ -18,12 +18,15 @@ import java.util.stream.Collectors;
  * שכבת ההכנה הלוגית של האלגוריתם.
  * המחלקה מתרגמת את נתוני המסד לבקשות מדורגות ולמדדי עדיפות.
  */
-// המחלקה הזו מכינה את כל המידע שהאלגוריתם צריך לפני השיבוץ עצמו.
 public final class SchedulePlanningService {
     /**
      * בונה עבור כל סטודנט את קבוצת קורסי החובה הרלוונטיים לו לפי מסלול ושנה.
+     *
+     * @param students רשימת הסטודנטים
+     * @param requirements רשימת חוקי החובה מן המסד
+     * @param coursesById מפת קורסים לפי מזהה
+     * @return מיפוי מכל סטודנט לקבוצת קורסי החובה שלו
      */
-    // כאן בונים לכל סטודנט את קורסי החובה שלו.
     public Map<Integer, Set<Integer>> buildMandatoryCoursesByStudent(
             List<Student> students,
             List<CourseRequirement> requirements,
@@ -53,8 +56,13 @@ public final class SchedulePlanningService {
 
     /**
      * מאחד העדפות אישיות וקורסי חובה לרשימת בקשות אחת לכל סטודנט.
+     *
+     * @param students רשימת הסטודנטים
+     * @param coursesById מפת הקורסים המוצעים לפי מזהה
+     * @param mandatoryCoursesByStudent קורסי החובה לכל סטודנט
+     * @param constraints משקלי אילוצים וכללי ניקוד
+     * @return מפת בקשות מוכנות לעבודה עבור כל סטודנט
      */
-    // כאן בונים את רשימת הבקשות של כל סטודנט, כולל קורסי חובה.
     public Map<Integer, StudentRequests> buildRequestsByStudent(
             List<Student> students,
             Map<Integer, Course> coursesById,
@@ -118,8 +126,11 @@ public final class SchedulePlanningService {
 
     /**
      * מגדיר את סדר הטיפול בסטודנטים לפני תחילת השיבוץ.
+     *
+     * @param mandatoryCoursesByStudent קורסי החובה לכל סטודנט
+     * @param requestsByStudent הבקשות המוכנות של כל סטודנט
+     * @return משווה שקובע את סדר הטיפול בסטודנטים
      */
-    // זה הסדר שבו נטפל בסטודנטים בזמן השיבוץ.
     public Comparator<Student> studentComparator(
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
             Map<Integer, StudentRequests> requestsByStudent
@@ -138,6 +149,14 @@ public final class SchedulePlanningService {
                 .thenComparingInt(Student::getStudentID);
     }
 
+    /**
+     * מחשב כמה בקשות חובה פתוחות נשארו לסטודנט.
+     *
+     * @param student הסטודנט הנבדק
+     * @param mandatoryCoursesByStudent קורסי החובה לכל סטודנט
+     * @param requestsByStudent מפת הבקשות לכל סטודנט
+     * @return מספר בקשות החובה שנכנסו לרשימת הבקשות של הסטודנט
+     */
     private int pendingMandatoryCount(
             Student student,
             Map<Integer, Set<Integer>> mandatoryCoursesByStudent,
@@ -153,8 +172,14 @@ public final class SchedulePlanningService {
 
     /**
      * ציון האיכות של בקשה מסוימת לפי העדפות, חובה ונתוני הסטודנט.
+     *
+     * @param student הסטודנט שעבורו מחושב הציון
+     * @param course הקורס המבוקש
+     * @param preferenceRank דירוג ההעדפה המקורי
+     * @param mandatory האם הקורס הוא קורס חובה עבור הסטודנט
+     * @param weights פרופיל המשקלים של ההרצה
+     * @return ציון האיכות של הבקשה
      */
-    // זה ציון "כמה הבקשה טובה" לסטודנט.
     private double scoreRequest(
             Student student,
             Course course,
@@ -188,8 +213,11 @@ public final class SchedulePlanningService {
 
     /**
      * עדיפות גישה משמשת להכרעת תחרות על מקום בקורס.
+     *
+     * @param student הסטודנט המתחרה על מקום בקורס
+     * @param mandatory האם הבקשה היא בקשת חובה
+     * @return ציון עדיפות לתחרות על מקום
      */
-    // זה ציון "מי קודם" כששני סטודנטים מתחרים על מקום.
     private double accessPriority(Student student, boolean mandatory) {
         // accessPriority נועד להכריע תחרות על מושב, ולכן הוא "חד" יותר מה-score הכללי.
         double score = (4 - student.getPriorityLevel()) * 100.0;
@@ -202,9 +230,20 @@ public final class SchedulePlanningService {
         return score;
     }
 
+    /**
+     * אוסף משקלי הניקוד שמשמשים לחישוב ציון בקשה.
+     *
+     * @param coursePreferenceWeight משקל דירוג העדפה
+     * @param dayWeight משקל התאמה ליום מועדף
+     * @param timeWeight משקל התאמה לשעה מועדפת
+     * @param mandatoryWeight משקל בקשת חובה
+     */
     public record WeightProfile(int coursePreferenceWeight, int dayWeight, int timeWeight, int mandatoryWeight) {
         /**
          * טוען משקלים מהמסד, עם ערכי ברירת מחדל כאשר אין כלל מתאים.
+         *
+         * @param constraints מפת האילוצים שנטענה מן המסד
+         * @return פרופיל משקלים מלא לחישוב ציונים
          */
         private static WeightProfile from(Map<String, ConstraintRule> constraints) {
             return new WeightProfile(
@@ -218,6 +257,11 @@ public final class SchedulePlanningService {
 
         /**
          * מאפשר לשנות את משקל האילוץ דרך מסד הנתונים בלי לשנות קוד.
+         *
+         * @param constraints מפת האילוצים שנטענה
+         * @param name שם האילוץ המבוקש
+         * @param defaultValue ערך ברירת מחדל אם האילוץ לא קיים
+         * @return משקל האילוץ בפועל
          */
         private static int constraintWeight(Map<String, ConstraintRule> constraints, String name, int defaultValue) {
             ConstraintRule rule = constraints.get(name);
@@ -237,6 +281,9 @@ public final class SchedulePlanningService {
     public record StudentRequests(List<RequestChoice> requests, int mandatoryRequestCount) {
         static final StudentRequests EMPTY = new StudentRequests(List.of(), 0);
 
+        /**
+         * @return מספר הבקשות הכולל של הסטודנט
+         */
         int size() {
             return requests.size();
         }

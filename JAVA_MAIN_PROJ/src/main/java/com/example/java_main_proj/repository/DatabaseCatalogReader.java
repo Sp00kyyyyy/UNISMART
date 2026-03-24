@@ -27,7 +27,15 @@ final class DatabaseCatalogReader {
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
+     * יוצר קורא קטלוג למסד הנתונים.
+     */
+    DatabaseCatalogReader() {
+    }
+
+    /**
      * טוען את כל הסטודנטים ומעשיר כל סטודנט גם בהעדפות הקורסים שלו.
+     *
+     * @return רשימת הסטודנטים עם העדפות קורסים
      */
     List<Student> loadStudents() {
         Connection connection = DatabaseConnection.getConnection();
@@ -76,6 +84,9 @@ final class DatabaseCatalogReader {
 
     /**
      * טוען קורסים לפי סמסטר, או את כל הקורסים אם לא נבחר סמסטר.
+     *
+     * @param semester הסמסטר המבוקש, או {@code null} עבור כל הקורסים
+     * @return רשימת הקורסים הרלוונטיים
      */
     List<Course> loadCourses(String semester) {
         Connection connection = DatabaseConnection.getConnection();
@@ -121,6 +132,8 @@ final class DatabaseCatalogReader {
 
     /**
      * טוען את כללי ההתאמה בין קורסים, מסלולים ושנים.
+     *
+     * @return רשימת חוקי החובה וההתאמה
      */
     List<CourseRequirement> loadCourseRequirements() {
         Connection connection = DatabaseConnection.getConnection();
@@ -146,6 +159,8 @@ final class DatabaseCatalogReader {
 
     /**
      * טוען את רשימת האילוצים והמשקלים שהאלגוריתם משתמש בהם.
+     *
+     * @return מפת אילוצים לפי שם האילוץ
      */
     Map<String, ConstraintRule> loadConstraints() {
         Connection connection = DatabaseConnection.getConnection();
@@ -173,6 +188,9 @@ final class DatabaseCatalogReader {
 
     /**
      * טוען העדפות קורסים לכל סטודנט ומקבץ אותן לפי מזהה סטודנט.
+     *
+     * @param connection חיבור פעיל למסד הנתונים
+     * @return מפת העדפות קורסים לפי מזהה סטודנט
      */
     private Map<Integer, List<CoursePreference>> loadPreferencesByStudent(Connection connection) {
         Map<Integer, List<CoursePreference>> preferencesByStudent = new HashMap<>();
@@ -194,6 +212,9 @@ final class DatabaseCatalogReader {
 
     /**
      * שומר על פורמט זמן אחיד במעבר מהמסד למודל.
+     *
+     * @param time ערך זמן מתוך המסד
+     * @return מחרוזת זמן בפורמט {@code HH:mm}
      */
     private String formatTime(Time time) {
         if (time == null) {

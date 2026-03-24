@@ -17,6 +17,20 @@ public class EnrollmentRunReport {
     private final int unassignedStudents;
     private final List<String> logLines;
 
+    /**
+     * יוצר דוח ריצה מסכם עבור הרצת השיבוץ.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @param studentsProcessed מספר הסטודנטים שטופלו
+     * @param requestedCourses מספר הבקשות הכולל
+     * @param assignedCourses מספר השיבוצים שבוצעו
+     * @param localImprovements מספר השיפורים המקומיים שאושרו
+     * @param fullAssignments מספר הסטודנטים שקיבלו שיבוץ מלא
+     * @param partialAssignments מספר הסטודנטים שקיבלו שיבוץ חלקי
+     * @param unassignedStudents מספר הסטודנטים שלא שובצו כלל
+     * @param logLines שורות לוג של ההרצה
+     */
     public EnrollmentRunReport(
             String academicYear,
             String semester,
@@ -41,42 +55,72 @@ public class EnrollmentRunReport {
         this.logLines = List.copyOf(logLines);
     }
 
+    /**
+     * @return שנת הלימודים של ההרצה
+     */
     public String getAcademicYear() {
         return academicYear;
     }
 
+    /**
+     * @return הסמסטר של ההרצה
+     */
     public String getSemester() {
         return semester;
     }
 
+    /**
+     * @return מספר הסטודנטים שטופלו בהרצה
+     */
     public int getStudentsProcessed() {
         return studentsProcessed;
     }
 
+    /**
+     * @return מספר הבקשות הכולל שנבדק בהרצה
+     */
     public int getRequestedCourses() {
         return requestedCourses;
     }
 
+    /**
+     * @return מספר הקורסים ששובצו בפועל
+     */
     public int getAssignedCourses() {
         return assignedCourses;
     }
 
+    /**
+     * @return מספר השיפורים שאושרו בשלב החיפוש המקומי
+     */
     public int getLocalImprovements() {
         return localImprovements;
     }
 
+    /**
+     * @return מספר הסטודנטים עם הצלחה מלאה
+     */
     public int getFullAssignments() {
         return fullAssignments;
     }
 
+    /**
+     * @return מספר הסטודנטים עם שיבוץ חלקי
+     */
     public int getPartialAssignments() {
         return partialAssignments;
     }
 
+    /**
+     * @return מספר הסטודנטים שלא שובצו כלל
+     */
     public int getUnassignedStudents() {
         return unassignedStudents;
     }
 
+    /**
+     * @return שורות הלוג שנאספו במהלך ההרצה
+     */
     public List<String> getLogLines() {
         return logLines;
     }

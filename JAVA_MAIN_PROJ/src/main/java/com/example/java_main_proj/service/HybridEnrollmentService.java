@@ -29,14 +29,28 @@ public class HybridEnrollmentService {
     private final SchedulingDataRepository repository;
     private final SchedulePlanningService planningService;
 
+    /**
+     * יוצר מנוע שיבוץ עם רכיבי ברירת המחדל של הפרויקט.
+     */
     public HybridEnrollmentService() {
         this(new SchedulingDataRepository());
     }
 
+    /**
+     * יוצר מנוע שיבוץ עם שכבת נתונים נתונה.
+     *
+     * @param repository שכבת הנתונים שתשמש את המנוע
+     */
     public HybridEnrollmentService(SchedulingDataRepository repository) {
         this(repository, new SchedulePlanningService());
     }
 
+    /**
+     * יוצר מנוע שיבוץ עם שכבת נתונים ושכבת תכנון שסופקו מבחוץ.
+     *
+     * @param repository שכבת הנתונים שתשמש את המנוע
+     * @param planningService שכבת התכנון והכנת הבקשות
+     */
     HybridEnrollmentService(SchedulingDataRepository repository, SchedulePlanningService planningService) {
         this.repository = Objects.requireNonNull(repository, "repository");
         this.planningService = Objects.requireNonNull(planningService, "planningService");
@@ -44,6 +58,10 @@ public class HybridEnrollmentService {
 
     /**
      * תרחיש שיבוץ מלא: טעינת נתונים, שיבוץ, שיפור ושמירה למסד.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @return דוח ריצה מסכם הכולל נתונים סטטיסטיים ולוג
      */
     public EnrollmentRunReport runEnrollment(String academicYear, String semester) {
         // זו הפונקציה הראשית: טוענת מידע, מריצה שיבוץ, שומרת תוצאות ומחזירה דוח.
@@ -148,6 +166,10 @@ public class HybridEnrollmentService {
 
     /**
      * מעבר חמדני ראשון: בוחר קורסים חוקיים לפי הסדר המדורג של הבקשות.
+     *
+     * @param student הסטודנט המטופל
+     * @param requests רשימת הבקשות של הסטודנט
+     * @param state מצב הריצה הנוכחי
      */
     private void assignGreedy(
             Student student,
@@ -168,6 +190,11 @@ public class HybridEnrollmentService {
 
     /**
      * שלב שיפור מקומי עם מספר קטן של מעברים כדי לשפר את תוצאת השיבוץ.
+     *
+     * @param students רשימת הסטודנטים לפי סדר הטיפול
+     * @param requestsByStudent מפת הבקשות לכל סטודנט
+     * @param state מצב הריצה הנוכחי
+     * @return מספר השיפורים שאושרו בפועל
      */
     private int runLocalImprovement(
             List<Student> students,
@@ -210,8 +237,13 @@ public class HybridEnrollmentService {
 
     /**
      * מנסה לפנות מקום לסטודנט מבקש על ידי הזזת סטודנט קיים לקורס חלופי.
+     *
+     * @param requester הסטודנט שמבקש את הקורס
+     * @param requestedCourse הבקשה הרצויה שלא שובצה
+     * @param requestsByStudent מפת הבקשות לכל סטודנט
+     * @param state מצב הריצה הנוכחי
+     * @return {@code true} אם מהלך ההזזה הצליח
      */
-    // אם אין מקום בקורס, מנסים לבדוק האם אפשר להעביר מישהו אחר לקורס אחר.
     private boolean tryDisplacement(
             Student requester,
             SchedulePlanningService.RequestChoice requestedCourse,
@@ -271,6 +303,15 @@ public class HybridEnrollmentService {
      * מחפש קורס חלופי חוקי שניתן להעביר אליו סטודנט קיים.
      */
     // מחפשת לסטודנט קורס אחר שאפשר להעביר אותו אליו בלי לשבור את הכללים.
+    /**
+     * מחפש לסטודנט חלופה טובה וחוקית לקורס שממנו מנסים להזיז אותו.
+     *
+     * @param student הסטודנט שעבורו מחפשים חלופה
+     * @param requests רשימת הבקשות שלו
+     * @param state מצב הריצה הנוכחי
+     * @param excludedCourseId מזהה קורס שיש להחריג מן החיפוש
+     * @return בקשת החלופה שנבחרה, או {@code null} אם לא נמצאה חלופה מתאימה
+     */
     private SchedulePlanningService.RequestChoice findBestAlternativeRequest(
             Student student,
             List<SchedulePlanningService.RequestChoice> requests,
@@ -296,6 +337,14 @@ public class HybridEnrollmentService {
      * בודק האם השיבוץ המבוקש שומר על קיבולת, מגבלות חובה והיעדר חפיפה.
      */
     // בדיקה בסיסית: יש מקום? אין חפיפה? לא עברנו את מגבלת החובה?
+    /**
+     * בודק אם בקשה מסוימת חוקית במצב הריצה הנוכחי.
+     *
+     * @param student הסטודנט שעבורו נבדקת הבקשה
+     * @param request הבקשה הנבדקת
+     * @param state מצב הריצה הנוכחי
+     * @return {@code true} אם הבקשה עומדת בכל האילוצים הקשים
+     */
     private boolean isFeasible(Student student, SchedulePlanningService.RequestChoice request, AssignmentState state) {
         Course course = request.course();
         // בלי מקום פנוי אין טעם להמשיך לבדוק תנאים נוספים.

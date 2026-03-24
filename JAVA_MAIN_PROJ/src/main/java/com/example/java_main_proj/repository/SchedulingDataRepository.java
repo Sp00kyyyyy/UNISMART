@@ -18,11 +18,20 @@ public class SchedulingDataRepository {
     private final EnrollmentRunRepository enrollmentRunRepository;
     private final EnrollmentResultsRepository enrollmentResultsRepository;
 
+    /**
+     * יוצר Repository ראשי עם ברירות המחדל של שכבת הנתונים.
+     */
     public SchedulingDataRepository() {
         // יוצר ברירת מחדל של רכיבי הקריאה והכתיבה למסד.
         this(new DatabaseCatalogReader(), new EnrollmentRunRepository());
     }
 
+    /**
+     * יוצר Repository ראשי עם רכיבי נתונים שסופקו מבחוץ.
+     *
+     * @param catalogReader קורא הקטלוג של נתוני הבסיס
+     * @param enrollmentRunRepository רכיב שמירת ההרצות
+     */
     SchedulingDataRepository(DatabaseCatalogReader catalogReader, EnrollmentRunRepository enrollmentRunRepository) {
         // המחלקה הזו משמשת facade ולכן מחזיקה את תתי-המחלקות המתמחות.
         this.catalogReader = catalogReader;
@@ -32,6 +41,8 @@ public class SchedulingDataRepository {
 
     /**
      * טוען סטודנטים כולל ההעדפות שלהם.
+     *
+     * @return רשימת הסטודנטים מן המסד
      */
     public List<Student> loadStudents() {
         return catalogReader.loadStudents();
@@ -39,6 +50,9 @@ public class SchedulingDataRepository {
 
     /**
      * טוען קורסים לפי סמסטר.
+     *
+     * @param semester הסמסטר המבוקש
+     * @return רשימת הקורסים של הסמסטר
      */
     public List<Course> loadCourses(String semester) {
         return catalogReader.loadCourses(semester);
@@ -46,6 +60,8 @@ public class SchedulingDataRepository {
 
     /**
      * טוען חוקי חובה של קורסים לפי מסלול ושנה.
+     *
+     * @return רשימת חוקי החובה
      */
     public List<CourseRequirement> loadCourseRequirements() {
         return catalogReader.loadCourseRequirements();
@@ -53,6 +69,8 @@ public class SchedulingDataRepository {
 
     /**
      * טוען את הגדרות האילוצים והמשקלים.
+     *
+     * @return מפת אילוצים לפי שם האילוץ
      */
     public Map<String, ConstraintRule> loadConstraints() {
         return catalogReader.loadConstraints();
@@ -60,6 +78,10 @@ public class SchedulingDataRepository {
 
     /**
      * שומר למסד את תוצאות ריצת השיבוץ.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @param decisions החלטות השיבוץ לשמירה
      */
     public void replaceEnrollmentRun(String academicYear, String semester, List<EnrollmentDecision> decisions) {
         enrollmentRunRepository.replaceEnrollmentRun(academicYear, semester, decisions);
@@ -67,16 +89,30 @@ public class SchedulingDataRepository {
 
     /**
      * טוען תוצאות מוכנות לתצוגה בממשק.
+     *
+     * @param academicYear שנת הלימודים הרצויה
+     * @param semester הסמסטר הרצוי
+     * @return רשימת תוצאות מעובדות להצגה
      */
     public List<EnrollmentResult> loadEnrollmentResults(String academicYear, String semester) {
         // תצוגת התוצאות דורשת גם את חוקי החובה כדי לחשב כמה הסטודנט ביקש בפועל.
         return enrollmentResultsRepository.loadEnrollmentResults(academicYear, semester, loadCourseRequirements());
     }
 
+    /**
+     * טוען שנות לימוד שקיימות עבורן תוצאות שמורות.
+     *
+     * @return רשימת שנות לימוד זמינות
+     */
     public List<String> loadAcademicYearsWithResults() {
         return enrollmentRunRepository.loadAcademicYearsWithResults();
     }
 
+    /**
+     * טוען את הסמסטרים הזמינים להצגת תוצאות.
+     *
+     * @return רשימת סמסטרים זמינים
+     */
     public List<String> loadSemestersWithResults() {
         return enrollmentRunRepository.loadSemestersWithResults();
     }

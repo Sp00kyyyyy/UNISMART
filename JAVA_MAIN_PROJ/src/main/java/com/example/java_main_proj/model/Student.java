@@ -22,9 +22,24 @@ public class Student {
     private int maxMandatoryCourses;
     private List<CoursePreference> preferences = new ArrayList<>();
 
+    /**
+     * יוצר אובייקט סטודנט ריק לצורך טעינה הדרגתית מן המסד.
+     */
     public Student() {
     }
 
+    /**
+     * יוצר סטודנט עם נתוני הזיהוי והעדיפות המרכזיים.
+     *
+     * @param studentID מזהה פנימי של הסטודנט
+     * @param fullName שם מלא
+     * @param idNumber מספר תעודת זהות
+     * @param year שנת לימוד
+     * @param track מסלול לימודים
+     * @param priorityLevel רמת עדיפות מנהלית
+     * @param seniority ותק אקדמי
+     * @param gpa ממוצע ציונים
+     */
     public Student(int studentID, String fullName, String idNumber, int year,
                    String track, int priorityLevel, int seniority, double gpa) {
         this.studentID = studentID;
@@ -37,104 +52,203 @@ public class Student {
         this.gpa = gpa;
     }
 
+    /**
+     * @return המזהה הפנימי של הסטודנט
+     */
     public int getStudentID() {
         return studentID;
     }
 
+    /**
+     * מעדכן את המזהה הפנימי של הסטודנט.
+     *
+     * @param studentID מזהה הסטודנט החדש
+     */
     public void setStudentID(int studentID) {
         this.studentID = studentID;
     }
 
+    /**
+     * @return השם המלא של הסטודנט
+     */
     public String getFullName() {
         return fullName;
     }
 
+    /**
+     * מעדכן את השם המלא של הסטודנט.
+     *
+     * @param fullName השם החדש
+     */
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
 
+    /**
+     * @return מספר תעודת הזהות של הסטודנט
+     */
     public String getIdNumber() {
         return idNumber;
     }
 
+    /**
+     * מעדכן את מספר תעודת הזהות של הסטודנט.
+     *
+     * @param idNumber מספר הזהות החדש
+     */
     public void setIdNumber(String idNumber) {
         this.idNumber = idNumber;
     }
 
+    /**
+     * @return שנת הלימוד של הסטודנט
+     */
     public int getYear() {
         return year;
     }
 
+    /**
+     * מעדכן את שנת הלימוד של הסטודנט.
+     *
+     * @param year שנת הלימוד החדשה
+     */
     public void setYear(int year) {
         this.year = year;
     }
 
+    /**
+     * @return מסלול הלימודים של הסטודנט
+     */
     public String getTrack() {
         return track;
     }
 
+    /**
+     * מעדכן את מסלול הלימודים של הסטודנט.
+     *
+     * @param track המסלול החדש
+     */
     public void setTrack(String track) {
         this.track = track;
     }
 
+    /**
+     * @return רמת העדיפות המנהלית של הסטודנט
+     */
     public int getPriorityLevel() {
         return priorityLevel;
     }
 
+    /**
+     * מעדכן את רמת העדיפות של הסטודנט.
+     *
+     * @param priorityLevel רמת העדיפות החדשה
+     */
     public void setPriorityLevel(int priorityLevel) {
         this.priorityLevel = priorityLevel;
     }
 
+    /**
+     * @return הוותק האקדמי של הסטודנט
+     */
     public int getSeniority() {
         return seniority;
     }
 
+    /**
+     * מעדכן את הוותק של הסטודנט.
+     *
+     * @param seniority ערך הוותק החדש
+     */
     public void setSeniority(int seniority) {
         this.seniority = seniority;
     }
 
+    /**
+     * @return ממוצע הציונים של הסטודנט
+     */
     public double getGpa() {
         return gpa;
     }
 
+    /**
+     * מעדכן את ממוצע הציונים של הסטודנט.
+     *
+     * @param gpa ממוצע הציונים החדש
+     */
     public void setGpa(double gpa) {
         this.gpa = gpa;
     }
 
+    /**
+     * @return העדפת הזמן של הסטודנט
+     */
     public String getTimePreference() {
         return timePreference;
     }
 
+    /**
+     * מעדכן את העדפת הזמן של הסטודנט.
+     *
+     * @param timePreference העדפת הזמן החדשה
+     */
     public void setTimePreference(String timePreference) {
         this.timePreference = timePreference;
     }
 
+    /**
+     * @return רשימת הימים המועדפים של הסטודנט כמחרוזת
+     */
     public String getPreferredDays() {
         return preferredDays;
     }
 
+    /**
+     * מעדכן את רשימת הימים המועדפים של הסטודנט.
+     *
+     * @param preferredDays הימים המועדפים בפורמט טקסטואלי
+     */
     public void setPreferredDays(String preferredDays) {
         this.preferredDays = preferredDays;
     }
 
+    /**
+     * @return מספר מקסימלי של קורסי חובה שמותר לשבץ לסטודנט
+     */
     public int getMaxMandatoryCourses() {
         return maxMandatoryCourses;
     }
 
+    /**
+     * מעדכן את מגבלת קורסי החובה של הסטודנט.
+     *
+     * @param maxMandatoryCourses מספר מקסימלי חדש
+     */
     public void setMaxMandatoryCourses(int maxMandatoryCourses) {
         this.maxMandatoryCourses = maxMandatoryCourses;
     }
 
+    /**
+     * @return רשימת העדפות הקורסים של הסטודנט
+     */
     public List<CoursePreference> getPreferences() {
         return preferences;
     }
 
+    /**
+     * מחליף את רשימת העדפות הקורסים של הסטודנט.
+     *
+     * @param preferences רשימת ההעדפות החדשה
+     */
     public void setPreferences(List<CoursePreference> preferences) {
         this.preferences = new ArrayList<>(preferences);
     }
 
     /**
      * בודק האם יום מסוים נמצא ברשימת הימים המועדפים של הסטודנט.
+     *
+     * @param day היום הנבדק
+     * @return {@code true} אם היום מועדף על הסטודנט, אחרת {@code false}
      */
     public boolean prefersDay(String day) {
         if (preferredDays == null || preferredDays.isBlank()) {
@@ -151,6 +265,9 @@ public class Student {
 
     /**
      * בודק האם שעת ההתחלה של הקורס מתאימה להעדפת הזמן של הסטודנט.
+     *
+     * @param course הקורס הנבדק
+     * @return {@code true} אם שעת הקורס מתאימה להעדפת הזמן, אחרת {@code false}
      */
     public boolean prefersCourseTime(Course course) {
         if (timePreference == null || timePreference.isBlank()) {

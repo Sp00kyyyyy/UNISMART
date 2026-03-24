@@ -13,6 +13,12 @@ import java.io.IOException;
  * אחריותה לטעון את מסך הבית וליצור את החלון הראשי של המערכת.
  */
 public class UniSmartApplication extends Application {
+    /**
+     * טוען את מסך הבית ומציג את החלון הראשי של היישום.
+     *
+     * @param stage החלון הראשי ש-JavaFX מספק ליישום
+     * @throws IOException אם טעינת קובץ ה-FXML נכשלת
+     */
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(MainDashboardController.class.getResource("/com/example/java_main_proj/main-dashboard-view.fxml"));
@@ -22,6 +28,11 @@ public class UniSmartApplication extends Application {
         stage.show();
     }
 
+    /**
+     * מפעיל את סביבת JavaFX של היישום.
+     *
+     * @param args ארגומנטים משורת הפקודה
+     */
     public static void main(String[] args) {
         launch();
     }

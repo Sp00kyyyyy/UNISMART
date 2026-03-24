@@ -42,6 +42,9 @@ public class ResultsController {
     private final ObservableList<EnrollmentResult> allResults = FXCollections.observableArrayList();
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
+    /**
+     * מאתחל את מסך התוצאות, את הטבלה ואת המסננים הראשוניים.
+     */
     @FXML
     public void initialize() {
         // מאתחל את מבנה הטבלה, המסננים והנתונים ההתחלתיים.
@@ -64,6 +67,12 @@ public class ResultsController {
         coursesListCol.setCellValueFactory(new PropertyValueFactory<>("coursesList"));
 
         statusCol.setCellFactory(column -> new TableCell<>() {
+            /**
+             * מעדכן את תוכן התא והעיצוב שלו לפי סטטוס השיבוץ.
+             *
+             * @param item ערך הסטטוס של התא
+             * @param empty האם התא ריק
+             */
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -123,11 +132,17 @@ public class ResultsController {
         partialLabel.setText(String.valueOf(partial));
     }
 
+    /**
+     * מפעיל מחדש את טעינת התוצאות לפי המסננים הנוכחיים.
+     */
     @FXML
     private void applyFilter() {
         refreshResults();
     }
 
+    /**
+     * מאפס את המסננים ומנקה את תצוגת התוצאות.
+     */
     @FXML
     private void clearFilter() {
         // איפוס מסננים מנקה גם את תוצאות הטבלה.
@@ -139,6 +154,9 @@ public class ResultsController {
         statusLabel.setText("המסננים נוקו.");
     }
 
+    /**
+     * סוגר את חלון התוצאות.
+     */
     @FXML
     private void closeWindow() {
         // סוגר את חלון התוצאות בלבד.

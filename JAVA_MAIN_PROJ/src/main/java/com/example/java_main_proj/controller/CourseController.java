@@ -37,6 +37,9 @@ public class CourseController {
     private final ObservableList<Course> coursesList = FXCollections.observableArrayList();
     private final SchedulingDataRepository repository = new SchedulingDataRepository();
 
+    /**
+     * מאתחל את טבלת הקורסים וטוען את הנתונים הראשוניים למסך.
+     */
     @FXML
     public void initialize() {
         // מגדיר את מבנה הטבלה לפני טעינת הנתונים.
@@ -113,6 +116,9 @@ public class CourseController {
         statusLabel.setText("נמצאו " + filtered.size() + " קורסים מתאימים.");
     }
 
+    /**
+     * מרענן את טבלת הקורסים מנתוני המסד.
+     */
     @FXML
     private void refreshTable() {
         // רענון אמיתי מהמסד ולא רק שחזור של הרשימה הקיימת.
@@ -120,6 +126,9 @@ public class CourseController {
         statusLabel.setText("רשימת הקורסים רועננה.");
     }
 
+    /**
+     * סוגר את חלון הקורסים.
+     */
     @FXML
     private void closeWindow() {
         // סוגר את חלון הקורסים.

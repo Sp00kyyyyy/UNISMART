@@ -17,7 +17,6 @@ import java.util.Map;
  * במקום לחשב מחדש בכל צעד, המחלקה מחזיקה מבני עזר שמאפשרים לבדוק זמינות,
  * חפיפות וקיבולת בצורה מהירה בזמן הרצת האלגוריתם.
  */
-// המחלקה הזו שומרת את מצב השיבוץ בזמן אמת.
 public final class AssignmentState {
     // כמה מקומות עדיין פנויים בכל קורס.
     private final Map<Integer, Integer> remainingSeatsByCourse = new HashMap<>();
@@ -32,6 +31,8 @@ public final class AssignmentState {
 
     /**
      * מאתחל את מצב הריצה לפי מספר המקומות הפנויים בכל קורס.
+     *
+     * @param courses רשימת הקורסים שממנה נגזר המצב ההתחלתי
      */
     public AssignmentState(Collection<Course> courses) {
         // בהתחלה רק מכינים כמה מקומות פנויים יש בכל קורס.
@@ -41,11 +42,24 @@ public final class AssignmentState {
         }
     }
 
+    /**
+     * בודק האם נותר מקום פנוי בקורס מסוים.
+     *
+     * @param courseId מזהה הקורס
+     * @return {@code true} אם יש מקום פנוי בקורס
+     */
     public boolean hasSeat(int courseId) {
         // בדיקת מקום פנוי היא O(1) בזכות המפה הישירה.
         return remainingSeatsByCourse.getOrDefault(courseId, 0) > 0;
     }
 
+    /**
+     * בודק האם סטודנט כבר שובץ לקורס מסוים.
+     *
+     * @param studentId מזהה הסטודנט
+     * @param courseId מזהה הקורס
+     * @return {@code true} אם הסטודנט כבר משובץ לקורס
+     */
     public boolean isAssigned(int studentId, int courseId) {
         // בודק במהירות אם הסטודנט כבר משובץ לקורס הנתון.
         return assignmentsByStudent.getOrDefault(studentId, Map.of()).containsKey(courseId);
@@ -53,6 +67,9 @@ public final class AssignmentState {
 
     /**
      * מוסיף שיבוץ חדש ומעדכן את כל האינדקסים הנלווים.
+     *
+     * @param student הסטודנט המשובץ
+     * @param request הבקשה שאושרה
      */
     public void assign(Student student, SchedulePlanningService.RequestChoice request) {
         // מוסיף שיבוץ חדש ומעדכן את כל המפות שצריכות לדעת עליו.
@@ -79,6 +96,9 @@ public final class AssignmentState {
 
     /**
      * מבטל שיבוץ קיים ומחזיר את המצב למצב עקבי.
+     *
+     * @param studentId מזהה הסטודנט
+     * @param courseId מזהה הקורס
      */
     public void unassign(int studentId, int courseId) {
         // מוחק שיבוץ קיים ומחזיר מקום פנוי לקורס.
@@ -107,21 +127,43 @@ public final class AssignmentState {
         remainingSeatsByCourse.computeIfPresent(courseId, (ignored, seats) -> seats + 1);
     }
 
+    /**
+     * מחזיר את כל שיבוצי הסטודנט ביום מסוים.
+     *
+     * @param studentId מזהה הסטודנט
+     * @param day היום הרצוי
+     * @return אוסף השיבוצים של הסטודנט באותו יום
+     */
     public Collection<AssignmentChoice> assignmentsForStudentOnDay(int studentId, String day) {
         // מחזיר רק את השיבוצים שיכולים להתנגש בזמן, במקום את כל מערכת השעות.
         return assignmentsByStudentDay.getOrDefault(studentId, Map.of()).getOrDefault(day, List.of());
     }
 
+    /**
+     * מחזיר את כל המשובצים לקורס מסוים.
+     *
+     * @param courseId מזהה הקורס
+     * @return אוסף המשובצים בקורס
+     */
     public Collection<AssignmentChoice> assignmentsForCourse(int courseId) {
         // משמש בעיקר כשצריך לדעת את מי ניתן לדחוק מקורס מלא.
         return assignmentsByCourse.getOrDefault(courseId, Map.of()).values();
     }
 
+    /**
+     * מחזיר כמה קורסי חובה כבר שובצו לסטודנט.
+     *
+     * @param studentId מזהה הסטודנט
+     * @return מספר קורסי החובה המשובצים
+     */
     public int mandatoryAssignmentCount(int studentId) {
         // קריאה ישירה לספירת קורסי החובה שכבר שובצו.
         return mandatoryAssignmentsByStudent.getOrDefault(studentId, 0);
     }
 
+    /**
+     * @return מספר השיבוצים הכולל במצב הריצה הנוכחי
+     */
     public int totalAssignments() {
         // סכימה של גודל המפות לכל סטודנט נותנת את מספר השיבוצים הכולל.
         return assignmentsByStudent.values().stream().mapToInt(Map::size).sum();
@@ -129,6 +171,10 @@ public final class AssignmentState {
 
     /**
      * ממיר את מצב הריצה לאוסף החלטות שניתן לשמור במסד הנתונים.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @return רשימת החלטות שיבוץ לשמירה במסד
      */
     public List<EnrollmentDecision> toDecisions(String academicYear, String semester) {
         // בסוף ההרצה ממירים את המצב הפנימי לרשימה שאפשר לשמור במסד.
@@ -154,6 +200,15 @@ public final class AssignmentState {
         return decisions;
     }
 
+    /**
+     * מייצג שיבוץ בודד כפי שהוא נשמר במצב הריצה.
+     *
+     * @param student הסטודנט ששובץ
+     * @param course הקורס שאליו שובץ
+     * @param request הבקשה המקורית שאושרה
+     * @param score ציון האיכות של השיבוץ
+     * @param accessPriority עדיפות הגישה של הבקשה
+     */
     public record AssignmentChoice(
             Student student,
             Course course,
@@ -163,6 +218,8 @@ public final class AssignmentState {
     ) {
         /**
          * קיצור נוח לגישה למידע האם השיבוץ הגיע מדרישת חובה.
+         *
+         * @return {@code true} אם הבקשה שסיפקה את השיבוץ היא בקשת חובה
          */
         public boolean mandatory() {
             return request.mandatory();

@@ -22,7 +22,17 @@ final class EnrollmentRunRepository {
     private static final String SEMESTER_B = "\u05E1\u05DE\u05E1\u05D8\u05E8 \u05D1'";
 
     /**
+     * יוצר Repository לשמירת תוצאות הרצה.
+     */
+    EnrollmentRunRepository() {
+    }
+
+    /**
      * מחליף ריצת שיבוץ קודמת של אותה שנה/סמסטר בתוצאות החדשות.
+     *
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
+     * @param decisions החלטות השיבוץ לשמירה
      */
     void replaceEnrollmentRun(String academicYear, String semester, List<EnrollmentDecision> decisions) {
         // כל פעולות ההרצה מתבצעות על אותו חיבור למסד.
@@ -45,6 +55,8 @@ final class EnrollmentRunRepository {
 
     /**
      * טוען את שנות הלימוד שקיימות עבורן תוצאות שמורות.
+     *
+     * @return רשימת שנות לימוד זמינות
      */
     List<String> loadAcademicYearsWithResults() {
         Connection connection = DatabaseConnection.getConnection();
@@ -72,6 +84,8 @@ final class EnrollmentRunRepository {
 
     /**
      * הסמסטרים במערכת קבועים ולכן מוחזרים כערכים ידועים.
+     *
+     * @return רשימת הסמסטרים הזמינים
      */
     List<String> loadSemestersWithResults() {
         return List.of(SEMESTER_A, SEMESTER_B);
@@ -79,6 +93,10 @@ final class EnrollmentRunRepository {
 
     /**
      * מוחק תוצאות ישנות של אותה ריצה לפני שמירת התוצאות החדשות.
+     *
+     * @param connection חיבור פעיל למסד
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
      */
     private void clearEnrollmentRun(Connection connection, String academicYear, String semester) {
         try (PreparedStatement deleteStatement = connection.prepareStatement(
@@ -93,6 +111,10 @@ final class EnrollmentRunRepository {
 
     /**
      * שומר את החלטות השיבוץ בטבלת Enrollment באמצעות batch insert.
+     *
+     * @param connection חיבור פעיל למסד
+     * @param decisions החלטות השיבוץ לשמירה
+     * @param nextEnrollmentId המזהה הראשון להקצאה בטבלה
      */
     private void saveEnrollmentDecisions(Connection connection, List<EnrollmentDecision> decisions, int nextEnrollmentId) {
         try (PreparedStatement insertStatement = connection.prepareStatement(
@@ -122,6 +144,11 @@ final class EnrollmentRunRepository {
 
     /**
      * מחשב מזהה חדש עבור טבלאות שבהן אין auto increment.
+     *
+     * @param connection חיבור פעיל למסד
+     * @param tableName שם הטבלה
+     * @param columnName שם עמודת המזהה
+     * @return המזהה הבא לשימוש
      */
     private int nextIdentifier(Connection connection, String tableName, String columnName) {
         try (Statement statement = connection.createStatement();
@@ -138,6 +165,10 @@ final class EnrollmentRunRepository {
 
     /**
      * מסנכרן את מספר הנרשמים בכל קורס בהתאם לתוצאות הריצה האחרונה.
+     *
+     * @param connection חיבור פעיל למסד
+     * @param academicYear שנת הלימודים של ההרצה
+     * @param semester הסמסטר של ההרצה
      */
     private void synchronizeCourseEnrollmentCounts(Connection connection, String academicYear, String semester) {
         // תחילה מחשבים כמה סטודנטים שובצו לכל קורס בהרצה הנוכחית.

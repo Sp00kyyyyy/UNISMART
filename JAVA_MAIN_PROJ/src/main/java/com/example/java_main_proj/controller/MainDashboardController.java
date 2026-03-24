@@ -18,6 +18,9 @@ public class MainDashboardController {
     @FXML
     private Label statusLabel;
 
+    /**
+     * מאתחל את מסך הבית ובודק את מצב החיבור למסד הנתונים.
+     */
     @FXML
     public void initialize() {
         // בפתיחת המסך הראשי בודקים מיד אם מסד הנתונים זמין.
@@ -38,6 +41,9 @@ public class MainDashboardController {
         }
     }
 
+    /**
+     * פותח את חלון ניהול הסטודנטים.
+     */
     @FXML
     private void showStudents() {
         try {
@@ -56,6 +62,9 @@ public class MainDashboardController {
         }
     }
 
+    /**
+     * פותח את חלון ניהול הקורסים.
+     */
     @FXML
     private void showCourses() {
         try {
@@ -73,6 +82,9 @@ public class MainDashboardController {
         }
     }
 
+    /**
+     * פותח את חלון הרצת השיבוץ.
+     */
     @FXML
     private void showEnrollment() {
         try {
@@ -90,6 +102,9 @@ public class MainDashboardController {
         }
     }
 
+    /**
+     * פותח את חלון התוצאות.
+     */
     @FXML
     private void showResults() {
         try {
@@ -107,6 +122,9 @@ public class MainDashboardController {
         }
     }
 
+    /**
+     * מציג חלון אודות קצר על המערכת.
+     */
     @FXML
     private void showAbout() {
         showAlert("אודות המערכת",
@@ -115,6 +133,9 @@ public class MainDashboardController {
                         "גרסה: 1.0");
     }
 
+    /**
+     * סוגר את היישום ומנתק את החיבור למסד הנתונים.
+     */
     @FXML
     private void handleExit() {
         // סוגר קודם את החיבור למסד ורק אחר כך מסיים את היישום.
@@ -124,6 +145,9 @@ public class MainDashboardController {
 
     /**
      * תבנית אחידה להצגת הודעות למשתמש.
+     *
+     * @param title כותרת החלון
+     * @param content תוכן ההודעה
      */
     private void showAlert(String title, String content) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);

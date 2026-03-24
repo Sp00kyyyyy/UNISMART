@@ -1,3 +1,7 @@
+/**
+ * מודול היישום הראשי של UniSmart.
+ * מייצא את נקודת הכניסה של היישום ופותח את חבילת ה-Controller לטעינה דרך FXML.
+ */
 module com.example.java_main_proj {
     requires javafx.controls;
     requires javafx.fxml;
