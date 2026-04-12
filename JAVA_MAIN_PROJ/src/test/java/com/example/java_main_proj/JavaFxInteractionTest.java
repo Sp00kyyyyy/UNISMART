@@ -17,6 +17,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -38,6 +39,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JavaFxInteractionTest {
@@ -143,6 +145,59 @@ class JavaFxInteractionTest {
             assertNotEquals(semesterACourses, semesterBCourses);
             assertTrue(statusLabel.getText().contains(SEMESTER_B));
         });
+    }
+
+    @Test
+    void resultsTableColumnsExposeCellValuesAfterEnrollment() throws Exception {
+        useIsolatedDatabaseCopy();
+        new HybridEnrollmentService().runEnrollment("2025-2026", SEMESTER_A);
+
+        LoadedView<ResultsController> loaded = loadView("/com/example/java_main_proj/results-view.fxml");
+
+        runOnFxThreadAndWait(() -> {
+            ComboBox<String> yearFilter = field(loaded.controller(), "yearFilterCombo", ComboBox.class);
+            ComboBox<String> semesterFilter = field(loaded.controller(), "semesterFilterCombo", ComboBox.class);
+            TableView<EnrollmentResult> table = field(loaded.controller(), "resultsTable", TableView.class);
+            TableColumn<EnrollmentResult, String> studentIdCol = field(loaded.controller(), "studentIdCol", TableColumn.class);
+            TableColumn<EnrollmentResult, String> studentNameCol = field(loaded.controller(), "studentNameCol", TableColumn.class);
+            TableColumn<EnrollmentResult, String> yearCol = field(loaded.controller(), "yearCol", TableColumn.class);
+            TableColumn<EnrollmentResult, Integer> requestedCol = field(loaded.controller(), "requestedCol", TableColumn.class);
+            TableColumn<EnrollmentResult, Integer> enrolledCol = field(loaded.controller(), "enrolledCol", TableColumn.class);
+            TableColumn<EnrollmentResult, String> statusCol = field(loaded.controller(), "statusCol", TableColumn.class);
+            TableColumn<EnrollmentResult, String> coursesListCol = field(loaded.controller(), "coursesListCol", TableColumn.class);
+
+            yearFilter.setValue("2025-2026");
+            semesterFilter.setValue(SEMESTER_A);
+            fireAction(semesterFilter);
+
+            assertFalse(table.getItems().isEmpty());
+            EnrollmentResult firstResult = table.getItems().getFirst();
+
+            assertEquals(firstResult.getStudentId(), studentIdCol.getCellObservableValue(0).getValue());
+            assertEquals(firstResult.getStudentName(), studentNameCol.getCellObservableValue(0).getValue());
+            assertEquals(firstResult.getYear(), yearCol.getCellObservableValue(0).getValue());
+            assertEquals(firstResult.getRequestedCourses(), requestedCol.getCellObservableValue(0).getValue());
+            assertEquals(firstResult.getEnrolledCourses(), enrolledCol.getCellObservableValue(0).getValue());
+            assertEquals(firstResult.getStatus(), statusCol.getCellObservableValue(0).getValue());
+            assertNotNull(coursesListCol.getCellObservableValue(0).getValue());
+        });
+    }
+
+    @Test
+    void resultsControllerAvoidsReflectiveTableValueFactory() throws Exception {
+        String source = Files.readString(Path.of(
+                "src",
+                "main",
+                "java",
+                "com",
+                "example",
+                "java_main_proj",
+                "controller",
+                "ResultsController.java"
+        ));
+
+        assertFalse(source.contains("PropertyValueFactory"),
+                "ResultsController should use explicit cell value factories so the modular JavaFX app can render cells.");
     }
 
     @Test

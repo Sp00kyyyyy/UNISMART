@@ -17,6 +17,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -28,6 +29,115 @@ class HybridEnrollmentServiceTest {
     private static final String PARTIAL_STATUS = "\u05E9\u05D9\u05D1\u05D5\u05E5 \u05D7\u05DC\u05E7\u05D9";
     private static final String EMPTY_STATUS = "\u05DC\u05DC\u05D0 \u05E9\u05D9\u05D1\u05D5\u05E5";
     private static final String YEAR_SUFFIX = "\u05E9\u05E0\u05D4";
+
+    @Test
+    void runEnrollmentAssignsEveryRequestedCourseWhenNoConstraintBlocksTheStudent() {
+        // Arrange
+        Course firstCourse = course(1, "Algorithms", "Monday", "09:00", "11:00", 5, "Fall");
+        Course secondCourse = course(2, "Databases", "Tuesday", "09:00", "11:00", 5, "Fall");
+        Course thirdCourse = course(3, "Networks", "Wednesday", "09:00", "11:00", 5, "Fall");
+        Student student = student(1, "Roni", "OTHER", 1, 2, 2, 85.0, 5, "", "Monday,Tuesday,Wednesday", List.of(
+                new CoursePreference(1, 1),
+                new CoursePreference(2, 2),
+                new CoursePreference(3, 3)
+        ));
+
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
+                List.of(student),
+                List.of(firstCourse, secondCourse, thirdCourse),
+                defaultConstraints(),
+                List.of()
+        );
+        HybridEnrollmentService service = new HybridEnrollmentService(repository);
+
+        // Act
+        EnrollmentRunReport report = service.runEnrollment("2025-2026", "Fall");
+        List<Integer> assignedCourseIds = repository.savedDecisions().stream()
+                .map(EnrollmentDecision::getCourseId)
+                .toList();
+
+        // Assert
+        assertAll(
+                () -> assertEquals(List.of(1, 2, 3), assignedCourseIds),
+                () -> assertEquals(3, report.getRequestedCourses()),
+                () -> assertEquals(3, report.getAssignedCourses()),
+                () -> assertEquals(1, report.getFullAssignments()),
+                () -> assertEquals(0, report.getPartialAssignments()),
+                () -> assertEquals(0, report.getUnassignedStudents())
+        );
+    }
+
+    @Test
+    void runEnrollmentKeepsFeasibleRequestsAfterSkippingAnOverlappingCourse() {
+        // Arrange
+        Course highestRankedCourse = course(1, "Algorithms", "Monday", "09:00", "11:00", 5, "Fall");
+        Course overlappingCourse = course(2, "Databases", "Monday", "10:00", "12:00", 5, "Fall");
+        Course laterFeasibleCourse = course(3, "Networks", "Tuesday", "09:00", "11:00", 5, "Fall");
+        Student student = student(1, "Yuval", "OTHER", 1, 2, 2, 85.0, 5, "", "Monday,Tuesday", List.of(
+                new CoursePreference(1, 1),
+                new CoursePreference(2, 2),
+                new CoursePreference(3, 3)
+        ));
+
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
+                List.of(student),
+                List.of(highestRankedCourse, overlappingCourse, laterFeasibleCourse),
+                defaultConstraints(),
+                List.of()
+        );
+        HybridEnrollmentService service = new HybridEnrollmentService(repository);
+
+        // Act
+        EnrollmentRunReport report = service.runEnrollment("2025-2026", "Fall");
+        Set<Integer> assignedCourseIds = repository.savedDecisions().stream()
+                .map(EnrollmentDecision::getCourseId)
+                .collect(Collectors.toSet());
+
+        // Assert
+        assertAll(
+                () -> assertEquals(Set.of(1, 3), assignedCourseIds),
+                () -> assertEquals(3, report.getRequestedCourses()),
+                () -> assertEquals(2, report.getAssignedCourses()),
+                () -> assertEquals(0, report.getFullAssignments()),
+                () -> assertEquals(1, report.getPartialAssignments()),
+                () -> assertEquals(0, report.getUnassignedStudents())
+        );
+    }
+
+    @Test
+    void runEnrollmentDoesNotFillOpenSeatsWithUnrequestedCourses() {
+        // Arrange
+        Course contestedCourse = course(1, "Algorithms", "Monday", "09:00", "11:00", 1, "Fall");
+        Course unrequestedCourseWithOpenSeats = course(2, "Databases", "Tuesday", "09:00", "11:00", 10, "Fall");
+        Student higherPriorityStudent = student(1, "Maya", "OTHER", 1, 1, 4, 95.0, 5, "", "Monday", List.of(
+                new CoursePreference(1, 1)
+        ));
+        Student lowerPriorityStudent = student(2, "Ori", "OTHER", 1, 4, 0, 65.0, 5, "", "Monday,Tuesday", List.of(
+                new CoursePreference(1, 1)
+        ));
+
+        StubSchedulingDataRepository repository = new StubSchedulingDataRepository(
+                List.of(lowerPriorityStudent, higherPriorityStudent),
+                List.of(contestedCourse, unrequestedCourseWithOpenSeats),
+                defaultConstraints(),
+                List.of()
+        );
+        HybridEnrollmentService service = new HybridEnrollmentService(repository);
+
+        // Act
+        EnrollmentRunReport report = service.runEnrollment("2025-2026", "Fall");
+
+        // Assert
+        assertAll(
+                () -> assertEquals(1, repository.savedDecisions().size()),
+                () -> assertEquals(1, repository.savedDecisions().getFirst().getStudentId()),
+                () -> assertEquals(1, repository.savedDecisions().getFirst().getCourseId()),
+                () -> assertEquals(2, report.getRequestedCourses()),
+                () -> assertEquals(1, report.getAssignedCourses()),
+                () -> assertEquals(1, report.getFullAssignments()),
+                () -> assertEquals(1, report.getUnassignedStudents())
+        );
+    }
 
     @Test
     void runEnrollmentGivesTheSingleSeatToTheMandatoryStudent() {

@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
 import java.util.List;
@@ -64,13 +63,20 @@ public class ResultsController {
      */
     private void setupTable() {
         // מחבר בין עמודות הטבלה לשדות של מודל התוצאה.
-        studentIdCol.setCellValueFactory(new PropertyValueFactory<>("studentId"));
-        studentNameCol.setCellValueFactory(new PropertyValueFactory<>("studentName"));
-        yearCol.setCellValueFactory(new PropertyValueFactory<>("year"));
-        requestedCol.setCellValueFactory(new PropertyValueFactory<>("requestedCourses"));
-        enrolledCol.setCellValueFactory(new PropertyValueFactory<>("enrolledCourses"));
-        statusCol.setCellValueFactory(new PropertyValueFactory<>("status"));
-        coursesListCol.setCellValueFactory(new PropertyValueFactory<>("coursesList"));
+        studentIdCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStudentId()));
+        studentNameCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStudentName()));
+        yearCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getYear()));
+        requestedCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getRequestedCourses()).asObject());
+        enrolledCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleIntegerProperty(cellData.getValue().getEnrolledCourses()).asObject());
+        statusCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getStatus()));
+        coursesListCol.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getCoursesList()));
 
         statusCol.setCellFactory(column -> new TableCell<>() {
             /**
